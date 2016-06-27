@@ -169,16 +169,18 @@ Route::group(['prefix' => 'events'], function(){
 	    }
      ]);
 	Route::post('/non-csi-indi-subscribe/{id}', ['as' => 'nonCsiIndiSubscribe', 'uses' => 'EventController@storeNonCsiIndiSubscriber' ]);
-});
 
-
-Route::group(['prefix' => 'events', 'middleware'=>'auth'], function(){
 	Route::get('/', ['as' => 'memberViewAll', 'uses' => 'EventController@viewAllEvents' ]);
 	Route::get('/create', ['as' => 'createEvent', 'uses'=>'EventController@create']);
 	Route::post('/create', ['as' => 'createEvent', 'uses'=>'EventController@store']);
 	Route::get('/csi-indi-subscriber/{id}', ['as' => 'CsiIndiSubscribe', 'uses'=>'EventController@storeCsiIndiSubscriber']);
 	Route::get('/show-nominees/{id}/csi', ['as' => 'showNomineesCSI', 'uses'=>'EventController@showNomineeDetailsCSI']);
 	Route::get('/show-nominees/{id}/organisation', ['as' => 'showNomineesORG', 'uses'=>'EventController@showNomineeDetailsORG']);
+});
+
+
+Route::group(['prefix' => 'events', 'middleware'=>'auth'], function(){
+	
 });
 
 
