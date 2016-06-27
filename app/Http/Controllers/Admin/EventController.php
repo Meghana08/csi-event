@@ -1,32 +1,33 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+use App\CsiIndividualSubscriber;
+use App\CsiOrganisationSubscriber;
+use App\CsiSubscriberNominee;
+use App\Event;
+use App\EventCancellationRequest;
+use App\EventGrant;
+use App\EventGrantStatus;
+use App\EventGrantType;
+use App\EventRequestAdminDecision;
+use App\EventStatus;
+use App\EventStatusChange;
+use App\EventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Institution;
 use App\InstitutionType;
+use App\Journal;
 use App\Member;
 use App\MembershipType;
-use Illuminate\Http\Request;
-use DB;
-use Input;
-use App\Event;
-use App\EventStatus;
-use App\EventStatusChange;
-use App\EventRequestAdminDecision;
-use App\EventCancellationRequest;
-use App\EventType;
-use App\EventGrant;
-use App\EventGrantType;
-use App\EventGrantStatus;
-use App\Payment;
-use App\Journal;
-use App\CsiIndividualSubscriber;
-use App\CsiOrganisationSubscriber;
 use App\NonCsiIndividualSubscriber;
-use App\CsiSubscriberNominee;
 use App\NonCsiOrganisationSubscriber;
 use App\OrganisationSubscriberNominee;
+use App\Payment;
+use DB;
+use Illuminate\Http\Request;
+use Input;
+use Laracasts\Flash\Flash;
 
 class EventController extends Controller
 {
@@ -228,6 +229,19 @@ class EventController extends Controller
     public function changeStatusAccept($id)
     {
       $event = Event::find($id);
+      $allGrantOK = true;
+      foreach($event->eventGrants as $grant){
+        if( !($grant->grant_status_id == 2 || $grant->grant_status_id == 5) ){
+            $allGrantOK = false;
+            break;
+        }
+      }
+
+      if(!$allGrantOK){
+          Flash::error("All grants have to be accepted or closed to peform this action");
+          return redirect()->back();
+      }
+      
       $status_id = EventStatus::where('event_status_name','Accepted')->value('id');
       $change = new EventStatusChange;
       $change->event_id = $id;
@@ -236,12 +250,26 @@ class EventController extends Controller
       $change->save();  
       Event::where('id',$id)->update(['event_status' => $status_id]);        
       Event::where('id',$id)->update(['event_id'=>$id ]);     //Generating Event ID
+
       return redirect()->back();          
     }
 
     public function changeStatusReject($id)
     {
       $event = Event::find($id);
+      $allGrantOK = true;
+      foreach($event->eventGrants as $grant){
+        if( !($grant->grant_status_id == 2 || $grant->grant_status_id == 5) ){
+            $allGrantOK = false;
+            break;
+        }
+      }
+
+      if(!$allGrantOK){
+          Flash::error("All grants have to be accepted or closed to peform this action");
+          return redirect()->back();
+      }
+      
       $status_id = EventStatus::where('event_status_name','Rejected')->value('id');
       $change = new EventStatusChange;
       $change->event_id = $id;

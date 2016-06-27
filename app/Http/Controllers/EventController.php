@@ -191,7 +191,7 @@ class EventController extends Controller
      public function storeCsiIndiSubscriber($id)
      {
             $memId=Auth::user()->user()->id;
-            $subscriber=new CsiIndividualSubscribers;
+            $subscriber=new CsiIndividualSubscriber;
             $subscriber->event_id = $id;
             $subscriber->member_id = $memId;
             $subscriber->save();
@@ -213,7 +213,7 @@ class EventController extends Controller
         $event_id = $id;
       
         $no_of_candidates = Input::get('no_of_candidates');
-        $subscriber = new NonCsiOrganisationSubscribers;
+        $subscriber = new NonCsiOrganisationSubscriber;
         $subscriber->event_id = $event_id;
         $subscriber->name = Input::get('name');
         $subscriber->contact_person = Input::get('contact_person');
@@ -238,7 +238,7 @@ class EventController extends Controller
     {
         $event_id = $id;
         $no_of_candidates = Input::get('no_of_candidates');
-        $subscriber = new CsiOrganisationSubscribers;
+        $subscriber = new CsiOrganisationSubscriber;
         $subscriber->event_id = $event_id;
         $subscriber->member_id = Auth::user()->user()->id;
         $subscriber->no_of_candidates=$no_of_candidates;

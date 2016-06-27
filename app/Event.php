@@ -23,5 +23,10 @@ class Event extends Model
     public function getEventTypeDetails() {
         return $this->hasOne('App\EventTypeDetail', 'event_id', 'id');        
     }
+    
+    public function eventGrants() {
+        return $this->hasMany('App\EventGrant', 'event_id', 'id');        
+    }
+
 
 }
