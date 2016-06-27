@@ -6,3 +6,9 @@ Homestead.json
 .env.example
 /storage/logs/laravel.log
 /storage/uploads/payments/*
+/storage/uploads/events/banners/*
+/storage/uploads/events/logos/*
+/storage/uploads/events/pdfs/*
+/storage/uploads/events/post_images/*
+/storage/uploads/events/CsiOrgSubscribers/*
+

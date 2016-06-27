@@ -13,6 +13,8 @@ class CreateEventTypesTable extends Migration
     public function up()
     {
         Schema::create('event_types', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            
             $table->increments('id')->unsigned();
             $table->string('event_type_name');
             $table->timestamps();

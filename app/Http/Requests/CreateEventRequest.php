@@ -29,7 +29,7 @@ class CreateEventRequest extends Request
             'event_theme'=>'required',
             'event_start_date'=>'required|date_format:d/m/Y',
             'event_end_date'=>'required|date_format:d/m/Y',
-            'event_start_time'=>'required|time_format:hh:mm:ss',
+            'event_start_time'=>'required',
             'event_end_time'=>'required',
             'event_venue'=>'required|string',
             'event_description'=>'required|string',
@@ -38,18 +38,19 @@ class CreateEventRequest extends Request
             'csi_prof_fee'=>'numeric',
             'csi_stud_fee'=>'numeric',
             'non_csi_fee'=>'numeric',
-            //'event_banner'=>'required',
-            //'event_pdf'=>'required',
             'max_seats'=>'required|numeric',
             'registration_start_date'=>'required|date_format:d/m/Y',
             'registration_end_date'=>'required|date_format:d/m/Y',
-            'event_start_time'=>'required',
-            'event_end_time'=>'required',
-           
+            'payment_date_deadline'=> 'required|date_format:d/m/Y',
+            'payment_time_deadline'=> 'required',
+            'event_banner'=> 'required|mimes:jpeg,bmp,png',
+            'event_pdf'=> 'required|mimes:pdf',
+            'event_logo'=> 'required|mimes:jpeg,bmp,png',
+            'registration_start_time'=> 'required',
+            'registration_end_time'=> 'required',
+            'certification_option'=> 'required',
+            'meals_option'=> 'required',
 
-
-            //'payment_deadline_time'=>
-            //
         ];
     }
 }

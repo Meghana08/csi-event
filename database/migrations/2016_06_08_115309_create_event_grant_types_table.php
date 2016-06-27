@@ -13,7 +13,9 @@ class CreateEventGrantTypesTable extends Migration
     public function up()
     {
         Schema::create('event_grant_types', function (Blueprint $table) {
-             $table->increments('id')->unsigned();
+            $table->engine = 'InnoDB';
+            
+            $table->increments('id')->unsigned();
             $table->string('grant_type_name');
             $table->timestamps();
         });

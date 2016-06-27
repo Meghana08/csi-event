@@ -12,7 +12,7 @@ class TargetAudienceSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('target_audience')->delete();
+        DB::table('target_audiences')->delete();
         
         $data = [
             ['target_name' => 'CSI Professional'],

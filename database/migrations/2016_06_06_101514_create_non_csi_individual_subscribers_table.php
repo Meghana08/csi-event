@@ -13,7 +13,6 @@ class CreateNonCsiIndividualSubscribersTable extends Migration
     public function up()
     {
          Schema::create('non_csi_individual_subscribers', function (Blueprint $table) {
-
             $table->engine = 'InnoDB';
 
             $table->bigIncrements('id')->unsigned();
@@ -25,6 +24,7 @@ class CreateNonCsiIndividualSubscribersTable extends Migration
             $table->date('dob');
             $table->tinyInteger('Payment_status')->default(0);
             $table->timestamps();
+
             $table->foreign('event_id')
                     ->references('id')->on('events')
                     ->onDelete('CASCADE')

@@ -13,6 +13,8 @@ class CreateResourcePersonTable extends Migration
     public function up()
     {
         Schema::create('resource_person', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+
             $table->bigIncrements('id')->unsigned();
             $table->bigInteger('event_id')->unsigned();
             $table->string('resource_person_name','30');

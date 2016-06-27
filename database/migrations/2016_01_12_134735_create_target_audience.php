@@ -12,7 +12,9 @@ class CreateTargetAudience extends Migration
      */
     public function up()
     {
-        Schema::create('target_audience', function (Blueprint $table) {
+        Schema::create('target_audiences', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            
             $table->increments('id')->unsigned();
             $table->string('target_name');
             $table->timestamps();

@@ -13,6 +13,8 @@ class CreateEventRequestAdminDecisionsTable extends Migration
     public function up()
     {
         Schema::create('event_request_admin_decisions', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            
             $table->increments('id');
             $table->string('decision',50);
             $table->timestamps();

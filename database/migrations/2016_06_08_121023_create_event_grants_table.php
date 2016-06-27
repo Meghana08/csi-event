@@ -14,6 +14,7 @@ class CreateEventGrantsTable extends Migration
     {
         Schema::create('event_grants', function (Blueprint $table) {
             $table->engine = 'InnoDB';
+            
             $table->bigIncrements('id')->unsigned();
             $table->bigInteger('event_id')->unsigned();
             $table->integer('grant_type_id')->unsigned();

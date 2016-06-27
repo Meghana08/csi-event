@@ -23,8 +23,8 @@
    		<div class="container">
    			<div class="row">
    				<div class="col-md-12">
-					  <h3 class="section-header-style">Successful submission of Application for event {{$event_name}} !
-					  <br>EVENT REQUEST ID : {{$event_id}}</h3>
+					  <h3 class="section-header-style">Successful submission of Application for event {{$e->event_name}} !
+					  <br>EVENT REQUEST ID : {{$e->id}}</h3>
 					  
 					  <div class="row">
 						  <div class="col-md-12" style="border-left: 2px solid #3f5586;">

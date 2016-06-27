@@ -18,16 +18,16 @@ use DB;
 use Auth;
 use Input;
 use App\EventType;
-use App\EventTypeDetails;
+use App\EventTypeDetail;
 use App\EventRequestAdminDecision;
-use App\EventPosts;
-use App\EventCancelationRequests;
-use App\CsiOrganisationSubscribers;
-use App\CsiIndividualSubscribers;
-use App\NonCsiOrganisationSubscribers;
-use App\NonCsiIndividualSubscribers;
+use App\EventPost;
+use App\EventCancellationRequest;
+use App\CsiOrganisationSubscriber;
+use App\CsiIndividualSubscriber;
+use App\NonCsiOrganisationSubscriber;
+use App\NonCsiIndividualSubscriber;
 use App\Member;
-use App\OrganisationSubscriberNominees;
+use App\OrganisationSubscriberNominee;
 use App\CsiSubscriberNominee;
 
 class EventController extends Controller
@@ -62,128 +62,105 @@ class EventController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function validateCreation(Request $request) {
-        $err = null;
-        $po = Input::get('payment_option');
-        $pd = Input::get('payment_date_deadline');
-        if($po && is_null($pd)) {
-            $err= "Enter Payment Deadline Date";
-        } 
-        else if(date(Input::get('event_start_date')) > date(Input::get('event_end_date'))) {
-          $err="Start Event date should be earlier than End date";
-        }
-        else if(strtotime(Input::get('registration_start_date')) > strtotime(Input::get('registration_end_date'))) {
-          $err="Registration Start date should be earlier than End date";
-        }
-        else if(date(Input::get('event_start_date')) < date(Input::get('registration_start_date'))) {
-          $err="Start Event date should be earlier than End date";
-        }
-        else if(strtotime(Input::get('registration_end_date')) > strtotime(Input::get('event_end_date'))) {
-          $err="Registration Start date should be earlier than End date";
-        }
-        else if(!is_null($request->file('event_banner'))) {
-           $bnrExt = $request->file('event_banner')->getClientOriginalExtension();
-           if(!strcmp($bnrExt,"png") || !strcmp($bnrExt,"jpg") || !strcmp($bnrExt,"gig") || !strcmp($bnrExt,"jpeg")) 
-           {
-            $err="Banner should be an image. Extensions allowed : .PNG, .JPG, .JPEG. .GIF";
-          }
-        }
-        else if(!is_null($request->file('event_logo'))) {
-           $bnrExt = $request->file('event_logo')->getClientOriginalExtension();
-           if(!strcmp($bnrExt,"png") || !strcmp($bnrExt,"jpg") || !strcmp($bnrExt,"gig") || !strcmp($bnrExt,"jpeg") || !strcmp($bnrExt,"bmp")) 
-           {
-            $err="Banner should be an image. Extensions allowed : .PNG, .JPG, .JPEG. .GIF .BMP";
-          }
-        }
-        else if(!is_null($request->file('event_pdf'))) {
-           $bnrExt = $request->file('event_pdf')->getClientOriginalExtension();
-           if(!strcmp($bnrExt,"pdf")) 
-           {
-            $err="Only PDFs allowed for Description File.";
-          }
-        }
-        else {
-          $err=null;
-        }
-        return $err;
-    }
-
     public function store(CreateEventRequest $request)
     {
-        $grantType = EventGrantType::all();
-        $targetAudience = TargetAudience::all();
-        $err=null;        
-        if(!is_null($err))
-          return view('frontend.events.create-event',compact('grantType','targetAudience','err'));        
-        $event=new Event;
-        $event->event_name = Input::get('event_name');
-        $event->event_type_id = Input::get('event_type_id');
-        $event->member_id= Auth::user()->user()->id;
-        $event->event_theme = Input::get('event_theme');
-        $event->event_start_date = date('Y-m-d', strtotime(Input::get('event_start_date')));
-        $event->event_end_date = date('Y-m-d', strtotime(Input::get('event_end_date')));
-        $event->event_start_time = Input::get('event_start_time');
-        $event->event_end_time = Input::get('event_end_time');
-        $event->event_venue = Input::get('event_venue');
-        $event->event_description = Input::get('event_description');
-        $event->payment_option = Input::get('payment_option');
-        $event->payment_date_deadline = date('Y-m-d', strtotime(Input::get('payment_deadline_date')));
-        $event->payment_time_deadline = Input::get('payment_deadline_time');
-        $event->save();
-         $id = $event->id;
-        if(!is_null($request->file('event_banner'))) {
-            $bannerName = $id.'.'.$request->file('event_banner')->getClientOriginalExtension();
-            $request->file('event_banner')->move(base_path().'/public/event/event_banners/',$bannerName);
-            Event::where('id',$id)->update(['event_banner'=>$bannerName]);
-        }
-        if(!is_null($request->file('event_pdf'))) {
-            $fileName = $id.'.'.$request->file('event_pdf')->getClientOriginalExtension();
-            $request->file('event_pdf')->move(base_path().'/public/event/event_pdfs/',$fileName);
-            Event::where('id',$id)->update(['event_pdf'=>$fileName]);
-        }
-        if(!is_null($request->file('event_logo'))) {
-            $logo = $id.'.'.$request->file('event_logo')->getClientOriginalExtension();
-            $request->file('event_logo')->move(base_path().'/public/event/event_logos/',$logo);
-            Event::where('id',$id)->update(['event_logo'=>$logo]);
-        }
-        $event_name = $event->event_name;
-        $event_id = $id;
-        foreach($targetAudience as $type) {
-            if (Input::get('targetType_'.$type->id) == $type->id) {
-              $fee=new TargetAudienceWithFee;
-              $fee->event_id=$event_id;
-              $fee->target_id=$type->id;
-              $po = Input::get('payment_option');
-              if($po==1) {
-                  $fee->fee=Input::get('fee_'.$type->id);
-              }
-              else
-                  $fee->fee=0;
-              $fee->save();
-            } 
-        }  
-        $event_type_details= new EventTypeDetails;
-        $event_type_details->event_id = $event->id;
-        $event_type_details->event_type_id = Input::get('event_type_id');
-        $event_type_details->max_seats = Input::get('max_seats');
-        $event_type_details->registration_start_date = date('Y-m-d', strtotime(Input::get('registration_start_date')));
-        $event_type_details->registration_end_date = date('Y-m-d', strtotime(Input::get('registration_end_date')));
-        $event_type_details->registration_start_time = Input::get('registration_start_time');
-        $event_type_details->registration_end_time = Input::get('registration_end_time');
-        $event_type_details->certification = Input::get('certification_option');
-        $event_type_details->meals = Input::get('meals_option');
-        $event_type_details->save();
-        foreach ($grantType as $type) {
-            if (Input::get($type->grant_type_name.'_description')) {
-                $grant = new EventGrant;
-                $grant->grant_type_id = $type->id;
-                $grant->grant_description = Input::get($type->grant_type_name.'_description');
-                $grant->grant_status_id = EventGrantStatus::where('grant_status_name', 'Waiting')->value('id');
-                $grant->event_id=$event_id;
-                $grant->save();
+        $e = DB::transaction(function($connection) use($request) {
+            $event=new Event;
+            $event->event_name = Input::get('event_name');
+            $event->event_type_id = Input::get('event_type_id');
+            $event->member_id= Auth::user()->user()->id;
+            $event->event_theme = Input::get('event_theme');
+            $event->event_start_date = date('Y-m-d', strtotime(Input::get('event_start_date')));
+            $event->event_end_date = date('Y-m-d', strtotime(Input::get('event_end_date')));
+            $event->event_start_time = Input::get('event_start_time');
+            $event->event_end_time = Input::get('event_end_time');
+            $event->event_venue = Input::get('event_venue');
+            $event->event_description = Input::get('event_description');
+            $event->payment_option = Input::get('payment_option');
+            $event->payment_date_deadline = date('Y-m-d', strtotime(Input::get('payment_deadline_date')));
+            $event->payment_time_deadline = Input::get('payment_deadline_time');
+            $event->save();
+            
+            $bannerName = $event->id.'.'.$request->file('event_banner')->getClientOriginalExtension();
+            $request->file('event_banner')->move(storage_path('uploads/events/banners'),$bannerName);
+            $event->event_banner=$bannerName;
+
+            $fileName = $event->id.'.'.$request->file('event_pdf')->getClientOriginalExtension();
+            $request->file('event_pdf')->move(storage_path('uploads/events/pdfs'),$fileName);
+            $event->event_pdf=$fileName;
+
+            $logo = $event->id.'.'.$request->file('event_logo')->getClientOriginalExtension();
+            $request->file('event_logo')->move(storage_path('uploads/events/logos'),$logo);
+            $event->event_logo=$logo;
+
+            $event_name = $event->event_name;
+
+            if (Input::exists('targetType_1')) {
+                $type_id = TargetAudience::where('target_name','CSI Professional')->first()->id;
+                TargetAudienceWithFee::create([
+                    'event_id' => $event->id,
+                    'target_id' => $type_id,
+                    'fee' => (Input::exists('payment_option') && Input::get('payment_option')==1)?Input::get('fee_1'):0,
+                ]);
+            }  
+            if (Input::exists('targetType_2')) {
+                $type_id = TargetAudience::where('target_name','CSI Student')->first()->id;
+                TargetAudienceWithFee::create([
+                    'event_id' => $event->id,
+                    'target_id' => $type_id,
+                    'fee' => (Input::exists('payment_option') && Input::get('payment_option')==1)?Input::get('fee_2'):0,
+                ]);
+            }  
+            if (Input::exists('targetType_3')) {
+                $type_id = TargetAudience::where('target_name','Non CSI Member')->first()->id;
+                TargetAudienceWithFee::create([
+                    'event_id' => $event->id,
+                    'target_id' => $type_id,
+                    'fee' => (Input::exists('payment_option') && Input::get('payment_option')==1)?Input::get('fee_3'):0,
+                ]);
+            }  
+
+            EventTypeDetail::create([
+              'event_id' => $event->id,
+              'event_type_id' => Input::get('event_type_id'),
+              'max_seats' => Input::get('max_seats'),
+              'registration_start_date' => date('Y-m-d', strtotime(Input::get('registration_start_date'))),
+              'registration_end_date' => date('Y-m-d', strtotime(Input::get('registration_end_date'))),
+              'registration_start_time' => Input::get('registration_start_time'),
+              'registration_end_time' => Input::get('registration_end_time'),
+              'certification' => Input::get('certification_option'),
+              'meals' => Input::get('meals_option'),
+            ]);
+            
+            if (Input::exists('technical_description')) {
+                EventGrant::create([
+                  'grant_type_id'  =>  EventGrantType::where('grant_type_name', 'technical')->first()->id,
+                  'grant_description'  =>  Input::get('technical_description'),
+                  'grant_status_id'  =>  EventGrantStatus::where('grant_status_name', 'Waiting')->value('id'),
+                  'event_id' => $event->id,
+                ]);
             }
-        }
-        return view('frontend.events.confirm-event',compact('event_id', 'event_name'));
+            if (Input::exists('financial_description')) {
+                EventGrant::create([
+                  'grant_type_id'  =>  EventGrantType::where('grant_type_name', 'financial')->first()->id,
+                  'grant_description'  =>  Input::get('financial_description'),
+                  'grant_status_id'  =>  EventGrantStatus::where('grant_status_name', 'Waiting')->value('id'),
+                  'event_id' => $event->id,
+                ]);
+            }
+            if (Input::exists('infrastructure_description')) {
+                EventGrant::create([
+                  'grant_type_id'  =>  EventGrantType::where('grant_type_name', 'infrastructure')->first()->id,
+                  'grant_description'  =>  Input::get('infrastructure_description'),
+                  'grant_status_id'  =>  EventGrantStatus::where('grant_status_name', 'Waiting')->value('id'),
+                  'event_id' => $event->id,
+                ]);
+            }
+            return $event;
+        });
+        
+
+        return view('frontend.events.confirm-event',compact('e'));
     }
 
     public function viewAllEvents() {
@@ -196,10 +173,10 @@ class EventController extends Controller
           $memId = Auth::user()->user()->id;
           $memType = Member::find($memId)->membership->type;
           if(!strcmp($memType, 'institutional')) {
-              $subscribedEvents = CsiOrganisationSubscribers::where('member_id',$memId)->get();
+              $subscribedEvents = CsiOrganisationSubscriber::where('member_id',$memId)->get();
           }
           else {
-              $subscribedEvents = CsiIndividualSubscribers::where('member_id',$memId)->get();
+              $subscribedEvents = CsiIndividualSubscriber::where('member_id',$memId)->get();
           }
         }
         $events = Event::where('event_status', EventStatus::where('event_status_name','Accepted')->value('id'));
@@ -299,7 +276,7 @@ class EventController extends Controller
     }
 
     public function showNomineeDetailsORG($id) {
-        $nominees = OrganisationSubscriberNominees::where('subscriber_id',$id)->get();
+        $nominees = OrganisationSubscriberNominee::where('subscriber_id',$id)->get();
         return view('frontend.events.showNomineeDetails',compact('nominees'));
     }
 
@@ -307,15 +284,15 @@ class EventController extends Controller
           if($id!=null || intval($id)>0){
               $isCreator = 0;
               $userId = Auth::user()->user()->id;
-              $creatorId = Event::where('id',$id)->value('member_id');
+              $creatorId = Event::find($id)->value('member_id');
               if($userId == $creatorId) {
                 $isCreator = 1;
               }
               $user = Member::find($creatorId);
               $event = Event::find($id);
               $grants = EventGrant::where('event_id',$id);
-              $cancelRequests = EventCancelationRequests::where('event_id',$id)->first();
-              $eventPosts = EventPosts::where('event_id',$id);
+              $cancelRequests = EventCancellationRequest::where('event_id',$id)->first();
+              $eventPosts = EventPost::where('event_id',$id);
               return view('frontend.events.event', compact('user', 'event', 'grants','cancelRequests','eventPosts','isCreator'));
           }
     }
@@ -325,8 +302,8 @@ class EventController extends Controller
         $this->validate($request, [
                         'reason' => 'required|max:255',
                     ]);
-        Event::where('id',$id)->update(['event_status' => EventStatus::where('event_status_name','Requested For Cancellation')->value('id')]);
-        $delete= new EventCancelationRequests;        
+        Event::find($id)->update(['event_status' => EventStatus::where('event_status_name','Requested For Cancellation')->value('id')]);
+        $delete= new EventCancellationRequest;        
         $delete->event_id=$request->id;
         $delete->reason=$request->reason;
         $delete->save();
@@ -338,7 +315,7 @@ class EventController extends Controller
     {
       if($id!=null || intval($id)>0){
         $event=Event::find($id);
-        $eventTypeDetail=EventTypeDetails::where('event_id',$id)->first();
+        $eventTypeDetail=EventTypeDetail::where('event_id',$id)->first();
         $eventGrant=EventGrant::where('event_id',$id)->get();
         $targetAudienceWithFee = TargetAudienceWithFee::where('event_id',$id)->get();
         $eventType=EventType::all();
@@ -349,59 +326,76 @@ class EventController extends Controller
    }
 
    public function editEvent(CreateEventRequest $request, $id) {
-      if($id!=null || intval($id)>0){  
-        Event::where('id',$id)->update([
-                'event_name'=>Input::get('event_name'),
-                'event_type_id'=>Input::get('event_type_id'),
-                'event_start_date' => date('Y-m-d', strtotime(Input::get('event_start_date'))),
-                'event_end_date' => date('Y-m-d', strtotime(Input::get('event_end_date'))),
-                'event_start_time' => Input::get('event_start_time'),
-                'event_end_time' => Input::get('event_end_time'),
-                'event_venue' => Input::get('event_venue'),
-                'event_description' => Input::get('event_description'),
-                'payment_option' => Input::get('payment_option'),
-                'payment_date_deadline' => date('Y-m-d', strtotime(Input::get('payment_deadline_date'))),
-                'payment_time_deadline' => Input::get('payment_deadline_time')
+      if($id!=null || intval($id)>0){
+        DB::transaction(function($connection) use($request, $id){
+
+          $event = Event::find($id);
+          $event->event_name = Input::get('event_name');
+          $event->event_type_id = Input::get('event_type_id');
+          $event->event_start_date = date('Y-m-d', strtotime(Input::get('event_start_date')));
+          $event->event_end_date = date('Y-m-d', strtotime(Input::get('event_end_date')));
+          $event->event_start_time = Input::get('event_start_time');
+          $event->event_end_time = Input::get('event_end_time');
+          $event->event_venue = Input::get('event_venue');
+          $event->event_description = Input::get('event_description');
+          $event->payment_option = Input::get('payment_option');
+          $event->payment_date_deadline = date('Y-m-d', strtotime(Input::get('payment_deadline_date')));
+          $event->payment_time_deadline = Input::get('payment_deadline_time');
+          
+          $bannerName = $id.'.'.$request->file('event_banner')->getClientOriginalExtension();
+          $request->file('event_banner')->move(storage_path('uploads/events/banners'),$bannerName);
+          $event->event_banner = $bannerName;
+      
+          $fileName = $id.'.'.$request->file('event_pdf')->getClientOriginalExtension();
+          $request->file('event_pdf')->move(storage_path('uploads/events/pdfs'),$fileName);
+          $event->event_pdf = $fileName;
+      
+          $logo = $id.'.'.$request->file('event_logo')->getClientOriginalExtension();
+          $request->file('event_logo')->move(storage_path('uploads/events/logos'),$logo);
+          $event->event_logo = $logo;
+          
+          $event->save();
+          
+          $target_csi_professional = TargetAudience::where('target_name','CSI Professional')->first();
+          if(TargetAudienceWithFee::where('event_id',$id)->where('target_id',$target_csi_professional->id)->exists()) {
+            TargetAudienceWithFee::where('event_id',$id)->where('target_id',$target_csi_professional->id)->update([
+                'fee' => Input::get('fee_1')
               ]);
-        if(!is_null($request->file('event_banner'))) {
-            $bannerName = $id.'.'.$request->file('event_banner')->getClientOriginalExtension();
-            $request->file('event_banner')->move(base_path().'/public/event/event_banners/',$bannerName);
-            Event::where('id',$id)->update(['event_banner'=>$bannerName]);
-         }
-        if(!is_null($request->file('event_pdf'))) {
-            $fileName = $id.'.'.$request->file('event_pdf')->getClientOriginalExtension();
-            $request->file('event_pdf')->move(base_path().'/public/event/event_pdfs/',$fileName);
-            Event::where('id',$id)->update(['event_pdf'=>$fileName]);
-        }
-        if(!is_null($request->file('event_logo'))) {
-            $logo = $id.'.'.$request->file('event_logo')->getClientOriginalExtension();
-            $request->file('event_logo')->move(base_path().'/public/event/event_logos/',$logo);
-            Event::where('id',$id)->update(['event_logo'=>$logo]);
-        }
-        $event = Event::find($id);
-        $targetAudience = TargetAudience::all();
-        foreach ($targetAudience as $type) {
-          $audience = TargetAudienceWithFee::where('event_id',$id)->where('target_id',$type->id)->count();
-          echo $audience.'-';
-          if($audience) {
-            TargetAudienceWithFee::where('event_id',$id)->where('target_id',$type->id)->update([
-                'fee' => Input::get('fee_'.$type->id)
+          } else if( Input::exists('targetType_1') ) {
+              TargetAudienceWithFee::create([
+                  'event_id' => $event->id,
+                  'target_id' => $type->id,
+                  'fee' => ($event->payment_option===1)?Input::get('fee_'.$type->id):0,
               ]);
           }
-          else {
-            if (Input::get('targetType_'.$type->id) == $type->id) {
-              $fee=new TargetAudienceWithFee;
-              $fee->event_id=$event->id;
-              $fee->target_id=$type->id;
-              if($event->payment_option===1)
-                  $fee->fee=Input::get('fee_'.$type->id);
-              else
-                  $fee->fee=0;
-              $fee->save();
-            }
+
+          $target_csi_student = TargetAudience::where('target_name','CSI Student')->first();
+          if(TargetAudienceWithFee::where('event_id',$id)->where('target_id',$target_csi_student->id)->exists()) {
+            TargetAudienceWithFee::where('event_id',$id)->where('target_id',$target_csi_student->id)->update([
+                'fee' => Input::get('fee_1')
+              ]);
+          } else if( Input::exists('targetType_2') ) {
+              TargetAudienceWithFee::create([
+                  'event_id' => $event->id,
+                  'target_id' => $target_csi_student->id,
+                  'fee' => ($event->payment_option===1)?Input::get('fee_2'):0,
+              ]);
           }
-        }
-        EventTypeDetails::where('event_id',$id)->update([
+
+          $target_non_csi = TargetAudience::where('target_name','Non CSI Member')->first();
+          if(TargetAudienceWithFee::where('event_id',$id)->where('target_id',$target_non_csi->id)->exists()) {
+            TargetAudienceWithFee::where('event_id',$id)->where('target_id',$target_non_csi->id)->update([
+                'fee' => Input::get('fee_3')
+              ]);
+          } else if( Input::exists('targetType_3') ) {
+              TargetAudienceWithFee::create([
+                  'event_id' => $event->id,
+                  'target_id' => $target_non_csi->id,
+                  'fee' => ($event->payment_option===1)?Input::get('fee_3'):0,
+              ]);
+          }
+          
+          EventTypeDetail::where('event_id',$id)->update([
               'event_type_id' => Input::get('event_type_id'),
               'max_seats' => Input::get('max_seats'),
               'registration_start_date' => date('Y-m-d', strtotime(Input::get('registration_start_date'))),
@@ -411,28 +405,56 @@ class EventController extends Controller
               'certification' => Input::get('certification_option'),
               'meals' => Input::get('meals_option')
           ]);
-        $grantType = EventGrantType::all();
-        foreach ($grantType as $type) {
-          $grants = EventGrant::where('event_id',$id)->where('grant_type_id',$type->id)->count();
-          if($grants) {
-            EventGrant::where('event_id',$id)->where('grant_type_id',$type->id)->update([
-                'grant_description' => Input::get($type->grant_type_name.'_description'),
+
+          $grant_technical = EventGrantType::where('grant_type_name', 'technical')->first();
+          if(EventGrant::where('event_id',$id)->where('grant_type_id',$grant_technical->id)->exists()) {
+            EventGrant::where('event_id',$id)->where('grant_type_id',$grant_technical->id)->update([
+                'grant_description' => Input::get('technical_description'),
                 'grant_status_id' => EventGrantStatus::where('grant_status_name', 'Waiting')->value('id')
               ]);
+          }else if (Input::get('technical_description')) {
+              EventGrant::create([
+                'grant_type_id' => $grant_technical->id,
+                'grant_description' => Input::get('technical_description'),
+                'grant_status_id' => EventGrantStatus::where('grant_status_name', 'Waiting')->value('id'),
+                'event_id' => $id,
+              ]);
           }
-          else {
-            if (Input::get($type->grant_type_name.'_description')) {
-                $grant = new EventGrant;
-                $grant->grant_type_id = $type->id;
-                $grant->grant_description = Input::get($type->grant_type_name.'_description');
-                $grant->grant_status_id = EventGrantStatus::where('grant_status_name', 'Waiting')->value('id');
-                $grant->event_id=$id;
-                $grant->save();
-            }
+
+          $grant_financial = EventGrantType::where('grant_type_name', 'financial')->first();
+          if(EventGrant::where('event_id',$id)->where('grant_type_id',$grant_financial->id)->exists()) {
+            EventGrant::where('event_id',$id)->where('grant_type_id',$grant_financial->id)->update([
+                'grant_description' => Input::get('financial_description'),
+                'grant_status_id' => EventGrantStatus::where('grant_status_name', 'Waiting')->value('id')
+              ]);
+          }else if (Input::get('financial_description')) {
+              EventGrant::create([
+                'grant_type_id' => $grant_financial->id,
+                'grant_description' => Input::get('financial_description'),
+                'grant_status_id' => EventGrantStatus::where('grant_status_name', 'Waiting')->value('id'),
+                'event_id' => $id,
+              ]);
           }
-        }
-        return redirect()->back();
+
+          $grant_infrastructure = EventGrantType::where('grant_type_name', 'infrastructure')->first();
+          if(EventGrant::where('event_id',$id)->where('grant_type_id',$grant_infrastructure->id)->exists()) {
+            EventGrant::where('event_id',$id)->where('grant_type_id',$grant_infrastructure->id)->update([
+                'grant_description' => Input::get('infrastructure_description'),
+                'grant_status_id' => EventGrantStatus::where('grant_status_name', 'Waiting')->value('id')
+              ]);
+          }else if (Input::get('infrastructure_description')) {
+              EventGrant::create([
+                'grant_type_id' => $grant_infrastructure->id,
+                'grant_description' => Input::get('infrastructure_description'),
+                'grant_status_id' => EventGrantStatus::where('grant_status_name', 'Waiting')->value('id'),
+                'event_id' => $id,
+              ]);
+          }
+      
+        });
       }
+      
+      return redirect()->back();
    }
 
    public function showSuscribers($id) {
@@ -444,10 +466,10 @@ class EventController extends Controller
         $nonCsiIndi=0;
         $csiOrg=0;
         $nonCsiOrg=0;
-        $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->paginate();
-        $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->paginate();
-        $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->paginate();
-        $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->paginate();
+        $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->paginate();
+        $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->paginate();
+        $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->paginate();
+        $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->paginate();
         return view('frontend.events.showSuscribersList',compact('csiIndividualSubscribers','csiOrganisationSubscribers','nonCsiIndividualSubscribers','nonCsiOrganisationSubscribers','nominees1','nominees2','page','search_text','fromDate','toDate','id','csiIndi','nonCsiIndi','csiOrg','nonCsiOrg'));
       }
    }
@@ -461,41 +483,41 @@ class EventController extends Controller
         $nonCsiIndi = $request->nonCsiIndi;
         $csiOrg = $request->csiOrg;
         $nonCsiOrg = $request->nonCsiOrg; 
-          $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id','<','0')->paginate();
-          $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id','<','0')->paginate();
-          $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id','<','0')->paginate();
-          $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id','<','0')->paginate(); 
+          $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id','<','0')->paginate();
+          $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id','<','0')->paginate();
+          $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id','<','0')->paginate();
+          $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id','<','0')->paginate(); 
         if(!is_null($csiIndi) || !is_null($nonCsiIndi) || !is_null($csiOrg) || !is_null($nonCsiOrg)) {
             if($csiIndi) {
               if(!is_null($search_text))
-                  $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->paginate();
+                  $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->paginate();
               else
-                  $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                  $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
             if($nonCsiIndi) {
               if(!is_null($search_text))
-                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->paginate();
+                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->paginate();
               else
-                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
             if($csiOrg) {
               if(!is_null($search_text))
-                $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->paginate();
+                $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->paginate();
               else
-                $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
             if($nonCsiOrg) {
               if(!is_null($search_text))
-                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->paginate();
+                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->paginate();
               else
-                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
         }
         else {
-            $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->paginate();
-            $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->paginate();
-            $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->paginate();
-            $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->paginate(); 
+            $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->paginate();
+            $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->paginate();
+            $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->paginate();
+            $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->paginate(); 
         }
       return view('frontend.events.showSuscribersList',compact('csiIndividualSubscribers','csiOrganisationSubscribers','nonCsiIndividualSubscribers','nonCsiOrganisationSubscribers','nominees1','nominees2','page','search_text','fromDate','toDate','id','csiIndi','nonCsiIndi','csiOrg','nonCsiOrg'));
    }
@@ -503,13 +525,13 @@ class EventController extends Controller
 
    public function addPost(Request $request, $id) {
       if($id!=null || intval($id)>0){
-            $post = new EventPosts;
+            $post = new EventPost;
             $post->event_id = $id;
             $post->post_text = Input::get('post_text');
             if(!is_null($request->file('post_image'))) {
-              $imageId = $id.'_'.EventPosts::orderBy('id','desc')->value('id')+1;
+              $imageId = $id.'_'.EventPost::orderBy('id','desc')->value('id')+1;
               $postImage = $imageId.'.'.$request->file('post_image')->getClientOriginalExtension();
-              $request->file('post_image')->move(base_path().'/public/event/event_post_images/',$postImage);
+              $request->file('post_image')->move(storage_path('uploads/events/post_images'),$postImage);
               $post->post_image = $postImage;
             }
             $post->save();

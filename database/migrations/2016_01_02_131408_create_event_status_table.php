@@ -13,8 +13,9 @@ class CreateEventStatusTable extends Migration
     public function up()
     {
          Schema::create('event_status', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            
             $table->increments('id')->unsigned();
-            //$table->primary('event_status_id');
             $table->string('event_status_name');
             $table->timestamps();
         });

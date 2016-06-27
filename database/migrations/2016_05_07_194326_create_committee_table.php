@@ -13,6 +13,8 @@ class CreateCommitteeTable extends Migration
     public function up()
     {
         Schema::create('committee', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+
             $table->bigIncrements('id')->unsigned();
             $table->bigInteger('event_id')->unsigned();
             $table->string('member_name','30');

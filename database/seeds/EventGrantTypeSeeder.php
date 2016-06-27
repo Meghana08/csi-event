@@ -15,9 +15,9 @@ class EventGrantTypeSeeder extends Seeder
         DB::table('event_grant_types')->delete();
         
         $data = [
-            ['grant_type_name' => 'Technical'],
-            ['grant_type_name' => 'Financial'],
-            ['grant_type_name' => 'Infrastructure']
+            ['grant_type_name' => 'technical'],
+            ['grant_type_name' => 'financial'],
+            ['grant_type_name' => 'infrastructure']
         ];
            
         foreach ($data as $value) {

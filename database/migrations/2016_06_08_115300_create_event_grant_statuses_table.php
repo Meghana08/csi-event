@@ -13,6 +13,8 @@ class CreateEventGrantStatusesTable extends Migration
     public function up()
     {
         Schema::create('event_grant_statuses', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+
             $table->increments('id')->unsigned();
             $table->string('grant_status_name');
             $table->timestamps();

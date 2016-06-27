@@ -22,7 +22,6 @@ class CreateCsiSubscriberNomineesTable extends Migration
             $table->string('email', 254);
             $table->bigInteger('contact_number');
             $table->date('dob');
-
             $table->timestamps();
             
             $table->foreign('subscriber_id')

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EventGrant extends Model
 {
-    protected $fillable =['grant_type_id','grant_description','reason'];
+    protected $fillable =['event_id', 'grant_type_id','grant_description','reason'];
 
     public function eventId() {
         return $this->hasOne('App\Event', 'id', 'event_id');

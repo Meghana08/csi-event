@@ -13,11 +13,12 @@ class CreateEventPostsTable extends Migration
     public function up()
     {
         Schema::create('event_posts', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            
             $table->increments('id');
             $table->bigInteger('event_id')->unsigned();
             $table->string('post_text',500);
             $table->string('post_image',50)->nullable();
-
             $table->timestamps();
 
             $table->foreign('event_id')

@@ -14,19 +14,19 @@ use App\Event;
 use App\EventStatus;
 use App\EventStatusChange;
 use App\EventRequestAdminDecision;
-use App\EventCancelationRequests;
+use App\EventCancellationRequest;
 use App\EventType;
 use App\EventGrant;
 use App\EventGrantType;
 use App\EventGrantStatus;
 use App\Payment;
 use App\Journal;
-use App\CsiIndividualSubscribers;
-use App\CsiOrganisationSubscribers;
-use App\NonCsiIndividualSubscribers;
+use App\CsiIndividualSubscriber;
+use App\CsiOrganisationSubscriber;
+use App\NonCsiIndividualSubscriber;
 use App\CsiSubscriberNominee;
-use App\NonCsiOrganisationSubscribers;
-use App\OrganisationSubscriberNominees;
+use App\NonCsiOrganisationSubscriber;
+use App\OrganisationSubscriberNominee;
 
 class EventController extends Controller
 {
@@ -66,89 +66,88 @@ class EventController extends Controller
         }else{
           $checkbox_array=array();
         } 
-        if($search)
-      {
-        switch($search)
-        {
-          case 1: $events= Event::where('event_id',$search_text)->latest()->paginate($rows);
-                  break;
-          case 2: if(count($status))
-                  {
-                    $events= Event::where('event_name','like','%'.$search_text.'%')->whereIn('event_status',$status)->latest()->paginate($rows);                    
-                  }
-                  else
-                  {
-                    $events= Event::where('event_name','like','%'.$search_text.'%')->latest()->paginate($rows);
-                  }
-                  break;
-            case 3: if(count($status))
-                  {
-                    $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
-                    $events= Event::whereIn('event_type_id',$type)->whereIn('event_status',$status)->latest()->paginate($rows);                    
-                  }
-                  else
-                  {
-                    $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
-                    $events= Event::whereIn('event_type_id',$type)->latest()->paginate($rows); 
-                  }
-                  break;
-            case 4:$events= Event::where('id',$search_text)->latest()->paginate($rows);
-                  break;
-            case 5: if(count($status))
-                  {
-                    $events=Event::where('member_id',$search_text)->whereIn('event_status',$status)->latest()->paginate($rows);
-                  }
-                  else
-                  {
-                    $events=Event::where('member_id',$search_text)->latest()->paginate($rows);
-                  }
-                  break;
-          case 6: if(count($status))
-                  {
-                    $member_id=Individual::select('member_id')->where('first_name','like','%'.$search_text.'%')->get();
-                    $events=Event::whereIn('member_id',$member_id)->whereIn('event_status',$status)->latest()->paginate($rows);
-                  }
-                  else
-                  {
-                    $member_id=Individual::select('member_id')->where('first_name','like','%'.$search_text.'%')->get();
-                    $events=Event::whereIn('member_id',$member_id)->latest()->paginate($rows);
-                  }
-                  break;
-          case 7: if(count($status))
-                  {
-                    $member_id=Institution::select('member_id')->where('name','like','%'.$search_text.'%')->get();                    
-                    $events= Event::whereIn('member_id',$member_id)->whereIn('event_status',$status)->latest()->paginate($rows);
-                  }
-                  else
-                  {
-                    $member_id=Institution::select('member_id')->where('name','like','%'.$search_text.'%')->get();                    
-                    $events= Event::whereIn('member_id',$member_id)->latest()->paginate($rows);
-                  }
-                  break;
-          case 8: if(count($status))
-                  {
-                    $member_id=Member::select('id')->where('email','like','%'.$search_text.'%')->get();
-                    $events= Event::whereIn('member_id',$member_id)->whereIn('event_status',$status)->latest()->paginate($rows);
-                  }
-                  else
-                  {
-                    $member_id=Member::select('id')->where('email','like','%'.$search_text.'%')->get();
-                    $events= Event::whereIn('member_id',$member_id)->latest()->paginate($rows);
-                  }
-                  break;
-        }       
-      }
-      else
-      {
-        if(count($status))
-        {
-          $events= Event::whereIn('event_status',$status)->latest()->paginate($rows);                    
+        if($search){
+
+          switch($search){
+
+            case 1: $events= Event::where('event_id',$search_text)->latest()->paginate($rows);
+                    break;
+            case 2: if(count($status))
+                    {
+                      $events= Event::where('event_name','like','%'.$search_text.'%')->whereIn('event_status',$status)->latest()->paginate($rows);                    
+                    }
+                    else
+                    {
+                      $events= Event::where('event_name','like','%'.$search_text.'%')->latest()->paginate($rows);
+                    }
+                    break;
+              case 3: if(count($status))
+                    {
+                      $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
+                      $events= Event::whereIn('event_type_id',$type)->whereIn('event_status',$status)->latest()->paginate($rows);                    
+                    }
+                    else
+                    {
+                      $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
+                      $events= Event::whereIn('event_type_id',$type)->latest()->paginate($rows); 
+                    }
+                    break;
+              case 4:$events= Event::where('id',$search_text)->latest()->paginate($rows);
+                    break;
+              case 5: if(count($status))
+                    {
+                      $events=Event::where('member_id',$search_text)->whereIn('event_status',$status)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $events=Event::where('member_id',$search_text)->latest()->paginate($rows);
+                    }
+                    break;
+            case 6: if(count($status))
+                    {
+                      $member_id=Individual::select('member_id')->where('first_name','like','%'.$search_text.'%')->get();
+                      $events=Event::whereIn('member_id',$member_id)->whereIn('event_status',$status)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $member_id=Individual::select('member_id')->where('first_name','like','%'.$search_text.'%')->get();
+                      $events=Event::whereIn('member_id',$member_id)->latest()->paginate($rows);
+                    }
+                    break;
+            case 7: if(count($status))
+                    {
+                      $member_id=Institution::select('member_id')->where('name','like','%'.$search_text.'%')->get();                    
+                      $events= Event::whereIn('member_id',$member_id)->whereIn('event_status',$status)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $member_id=Institution::select('member_id')->where('name','like','%'.$search_text.'%')->get();                    
+                      $events= Event::whereIn('member_id',$member_id)->latest()->paginate($rows);
+                    }
+                    break;
+            case 8: if(count($status))
+                    {
+                      $member_id=Member::select('id')->where('email','like','%'.$search_text.'%')->get();
+                      $events= Event::whereIn('member_id',$member_id)->whereIn('event_status',$status)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $member_id=Member::select('id')->where('email','like','%'.$search_text.'%')->get();
+                      $events= Event::whereIn('member_id',$member_id)->latest()->paginate($rows);
+                    }
+                    break;
+
+            }       
+        } else{
+          if(count($status))
+          {
+            $events= Event::whereIn('event_status',$status)->latest()->paginate($rows);                    
+          }
+          else
+          {
+            $events= Event::all();
+          }
         }
-        else
-        {
-          $events= Event::all();
-        }
-      }
         $from_date_records = array();
         $to_date_records = array();
         foreach ($events as $key => $event) {
@@ -173,10 +172,10 @@ class EventController extends Controller
 
     public function showEvent($id) {
           if($id!=null || intval($id)>0){
-              $user = Member::find(Event::where('id',$id)->value('member_id'));
+              $user = Member::find(Event::find($id)->value('member_id'));
               $event = Event::find($id);
               $grants = EventGrant::where('event_id',$id)->get();
-              $cancelRequests = EventCancelationRequests::where('event_id',$id)->first();
+              $cancelRequests = EventCancellationRequest::where('event_id',$id)->first();
               return view('backend.events.event', compact('user', 'event', 'grants','cancelRequests'));
           }
     }
@@ -230,13 +229,13 @@ class EventController extends Controller
     {
       $event = Event::find($id);
       $status_id = EventStatus::where('event_status_name','Accepted')->value('id');
-          $change = new EventStatusChange;
-          $change->event_id = $id;
-          $change->prev_status = $event->event_status;
-          $change->cur_status = $status_id;              
-          $change->save();  
-          Event::where('id',$id)->update(['event_status' => $status_id]);        
-          Event::where('id',$id)->update(['event_id'=>$id ]);     //Generating Event ID
+      $change = new EventStatusChange;
+      $change->event_id = $id;
+      $change->prev_status = $event->event_status;
+      $change->cur_status = $status_id;              
+      $change->save();  
+      Event::where('id',$id)->update(['event_status' => $status_id]);        
+      Event::where('id',$id)->update(['event_id'=>$id ]);     //Generating Event ID
       return redirect()->back();          
     }
 
@@ -244,23 +243,23 @@ class EventController extends Controller
     {
       $event = Event::find($id);
       $status_id = EventStatus::where('event_status_name','Rejected')->value('id');
-          $change = new EventStatusChange;
-          $change->event_id = $id;
-          $change->prev_status = $event->event_status;
-          $change->cur_status = $status_id;              
-          $change->save();      
-          Event::where('id',$id)->update(['event_status' => $status_id]);   
-          $grants = EventGrant::where('event_id',$id)->get();
-          foreach ($grants as $grant) {
-              EventGrant::where('id',$grant->id)->update(['grant_status_id' => EventGrantStatus::where('grant_status_name','Closed')->value('id')]);
-          }  
+      $change = new EventStatusChange;
+      $change->event_id = $id;
+      $change->prev_status = $event->event_status;
+      $change->cur_status = $status_id;              
+      $change->save();      
+      Event::where('id',$id)->update(['event_status' => $status_id]);   
+      $grants = EventGrant::where('event_id',$id)->get();
+      foreach ($grants as $grant) {
+          EventGrant::where('id',$grant->id)->update(['grant_status_id' => EventGrantStatus::where('grant_status_name','Closed')->value('id')]);
+      }
       return redirect()->back();          
     }
 
     public function grantStatusChangeAccept($id) {
       $grant_id = $id;
       EventGrant::where('id',$grant_id)->update(['reason' => Input::get('grant_status_reason')]);      
-          EventGrant::where('id',$grant_id)->update(['grant_status_id' => EventGrantStatus::where('grant_status_name','Accepted')->value('id')]);                
+      EventGrant::where('id',$grant_id)->update(['grant_status_id' => EventGrantStatus::where('grant_status_name','Accepted')->value('id')]);                
       $event_id = EventGrant::where('id',$grant_id)->value('event_id');
       return redirect()->back();         
     }
@@ -283,7 +282,7 @@ class EventController extends Controller
 
     public function cancelEvent($id)
     {
-        EventCancelationRequests::where('event_id',$event_id)->update(['decision_id' => EventRequestAdminDecision::where('decision','accepted')->value('id')]);
+        EventCancellationRequest::where('event_id',$event_id)->update(['decision_id' => EventRequestAdminDecision::where('decision','accepted')->value('id')]);
         Event::where('id',$event_id)->update(['event_status' => EventStatus::where('event_status_name','Cancelled')->value('id')]);
         $grants = EventGrant::where('event_id',$event_id)->get();
         foreach ($grants as $grant) {
@@ -294,7 +293,7 @@ class EventController extends Controller
 
     public function cancelEventReject($id)
     {
-        EventCancelationRequests::where('event_id',$id)->update(['decision_id' =>EventRequestAdminDecision::where('decision','rejected')->value('id')]);
+        EventCancellationRequest::where('event_id',$id)->update(['decision_id' =>EventRequestAdminDecision::where('decision','rejected')->value('id')]);
         Event::where('id',$id)->update(['event_status' => EventStatus::where('event_status_name','Waiting')->value('id')]);
         return redirect()->route('adminEventDetails',[$id]);
     }
@@ -377,10 +376,10 @@ class EventController extends Controller
         $nonCsiIndi=0;
         $csiOrg=0;
         $nonCsiOrg=0;
-        $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->paginate();
-        $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->paginate();
-        $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->paginate();
-        $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->paginate();
+        $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->paginate();
+        $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->paginate();
+        $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->paginate();
+        $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->paginate();
         return view('backend.events.showSuscribersList',compact('csiIndividualSubscribers','csiOrganisationSubscribers','nonCsiIndividualSubscribers','nonCsiOrganisationSubscribers','nominees1','nominees2','page','search_text','fromDate','toDate','id','csiIndi','nonCsiIndi','csiOrg','nonCsiOrg'));
       }
    }
@@ -394,41 +393,41 @@ class EventController extends Controller
         $nonCsiIndi = $request->nonCsiIndi;
         $csiOrg = $request->csiOrg;
         $nonCsiOrg = $request->nonCsiOrg; 
-          $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id','<','0')->paginate();
-          $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id','<','0')->paginate();
-          $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id','<','0')->paginate();
-          $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id','<','0')->paginate(); 
+          $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id','<','0')->paginate();
+          $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id','<','0')->paginate();
+          $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id','<','0')->paginate();
+          $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id','<','0')->paginate(); 
         if(!is_null($csiIndi) || !is_null($nonCsiIndi) || !is_null($csiOrg) || !is_null($nonCsiOrg)) {
             if($csiIndi) {
               if(!is_null($search_text))
-                  $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->paginate();
+                  $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->paginate();
               else
-                  $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                  $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
             if($nonCsiIndi) {
               if(!is_null($search_text))
-                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->paginate();
+                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->paginate();
               else
-                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                  $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
             if($csiOrg) {
               if(!is_null($search_text))
-                $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->paginate();
+                $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->paginate();
               else
-                $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
             if($nonCsiOrg) {
               if(!is_null($search_text))
-                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->paginate();
+                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->paginate();
               else
-                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->where('id',$search_text)->paginate();
+                $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->where('id',$search_text)->paginate();
             }
         }
         else {
-            $csiIndividualSubscribers = CsiIndividualSubscribers::where('event_id',$id)->paginate();
-            $csiOrganisationSubscribers = CsiOrganisationSubscribers::where('event_id',$id)->paginate();
-            $nonCsiIndividualSubscribers = NonCsiIndividualSubscribers::where('event_id',$id)->paginate();
-            $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscribers::where('event_id',$id)->paginate(); 
+            $csiIndividualSubscribers = CsiIndividualSubscriber::where('event_id',$id)->paginate();
+            $csiOrganisationSubscribers = CsiOrganisationSubscriber::where('event_id',$id)->paginate();
+            $nonCsiIndividualSubscribers = NonCsiIndividualSubscriber::where('event_id',$id)->paginate();
+            $nonCsiOrganisationSubscribers = NonCsiOrganisationSubscriber::where('event_id',$id)->paginate(); 
         }
       return view('backend.events.showSuscribersList',compact('csiIndividualSubscribers','csiOrganisationSubscribers','nonCsiIndividualSubscribers','nonCsiOrganisationSubscribers','nominees1','nominees2','page','search_text','fromDate','toDate','id','csiIndi','nonCsiIndi','csiOrg','nonCsiOrg'));
    }
@@ -440,7 +439,7 @@ class EventController extends Controller
     }
 
     public function showNomineeDetailsORG($id) {
-        $nominees = OrganisationSubscriberNominees::where('subscriber_id',$id)->get();
+        $nominees = OrganisationSubscriberNominee::where('subscriber_id',$id)->get();
         return view('backend.events.showNomineeDetails',compact('nominees'));
     }
 }

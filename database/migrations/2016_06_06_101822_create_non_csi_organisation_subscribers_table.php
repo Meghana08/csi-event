@@ -15,13 +15,12 @@ class CreateNonCsiOrganisationSubscribersTable extends Migration
         Schema::create('non_csi_organisation_subscribers', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             
-            
             $table->bigIncrements('id')->unsigned();
             $table->bigInteger('event_id')->unsigned();
             $table->string('name', 50);
             $table->string('contact_person', 50);
             $table->bigInteger('contact_number');
-             $table->string('email', 254);
+            $table->string('email', 254);
             $table->integer('no_of_candidates')->unsigned();
             $table->tinyInteger('Payment_status')->default(0);
             $table->timestamps();

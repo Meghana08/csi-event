@@ -26,7 +26,7 @@ class CreateTargetAudienceWithFeesTable extends Migration
                     ->onUpdate('CASCADE');
 
             $table->foreign('target_id')
-                    ->references('id')->on('target_audience')
+                    ->references('id')->on('target_audiences')
                     ->onDelete('CASCADE')
                     ->onUpdate('CASCADE');
         });

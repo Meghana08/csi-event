@@ -13,12 +13,12 @@ class CreateEventStatusChangesTable extends Migration
     public function up()
     {
         Schema::create('event_status_changes', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            
             $table->bigIncrements('id');
             $table->bigInteger('event_id')->unsigned();
             $table->integer('prev_status')->unsigned();
             $table->integer('cur_status')->unsigned();
-           // $table->integer('admin_id')->unsigned();
-
             $table->timestamps();
 
             $table->foreign('event_id')
@@ -35,10 +35,6 @@ class CreateEventStatusChangesTable extends Migration
                     ->references('id')->on('event_status')
                     ->onDelete('CASCADE')
                     ->onUpdate('CASCADE');
-            
-            // $table->foreign('admin_id')
-            //         ->references('id')->on('admins')
-            //         ->onUpdate('CASCADE');
 
         });
     }
