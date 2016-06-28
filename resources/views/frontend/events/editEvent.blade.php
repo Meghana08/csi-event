@@ -317,3 +317,9 @@
 
     </section>
 @endsection
+
+
+@section('footer-scripts')
+    <script src={{ asset('js/events.js') }}></script>
+    <script src={{ asset("js/validateit.js") }}></script>
+@endsection

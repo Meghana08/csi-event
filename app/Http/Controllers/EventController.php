@@ -62,8 +62,39 @@ class EventController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function store(CreateEventRequest $request)
+    public function validateCreation(Request $request) {
+
+        $err=null;
+        $err = array();
+        $po = Input::get('payment_option');
+        $pd = Input::get('payment_date_deadline');
+        if($po && is_null($pd)) {
+            array_push($err, "Enter Payment Deadline Date");
+        } 
+        if(strtotime(Input::get('event_start_date')) > strtotime(Input::get('event_end_date'))) {
+          array_push($err, "Start Event date should be earlier than End date");
+        }
+        if(strtotime(Input::get('registration_start_date')) > strtotime(Input::get('registration_end_date'))) {
+          array_push($err, "Registration Start date should be earlier than End date");
+        }
+        if(strtotime(Input::get('event_start_date')) > strtotime(Input::get('registration_start_date'))) {
+          array_push($err, "Event start date should be earlier than Registration start date");
+        }
+        if(strtotime(Input::get('registration_end_date')) > strtotime(Input::get('event_end_date'))) {
+          array_push($err, "Event end date should be later than Registration end date");
+        }
+        
+        return $err;
+    }
+
+    public function store(Request $request)
     {
+        $errors = $this->validateCreation($request);
+
+        if($errors) {
+          return redirect()->back()->withErrors($errors)->withInput();
+        }
+
         $e = DB::transaction(function($connection) use($request) {
             $event=new Event;
             $event->event_name = Input::get('event_name');
@@ -132,7 +163,7 @@ class EventController extends Controller
               'meals' => Input::get('meals_option'),
             ]);
             
-            if (Input::exists('technical_description')) {
+            if (Input::has('technical_description')) {
                 EventGrant::create([
                   'grant_type_id'  =>  EventGrantType::where('grant_type_name', 'technical')->first()->id,
                   'grant_description'  =>  Input::get('technical_description'),
@@ -140,7 +171,7 @@ class EventController extends Controller
                   'event_id' => $event->id,
                 ]);
             }
-            if (Input::exists('financial_description')) {
+            if (Input::has('financial_description')) {
                 EventGrant::create([
                   'grant_type_id'  =>  EventGrantType::where('grant_type_name', 'financial')->first()->id,
                   'grant_description'  =>  Input::get('financial_description'),
@@ -148,7 +179,7 @@ class EventController extends Controller
                   'event_id' => $event->id,
                 ]);
             }
-            if (Input::exists('infrastructure_description')) {
+            if (Input::has('infrastructure_description')) {
                 EventGrant::create([
                   'grant_type_id'  =>  EventGrantType::where('grant_type_name', 'infrastructure')->first()->id,
                   'grant_description'  =>  Input::get('infrastructure_description'),
@@ -559,77 +590,79 @@ class EventController extends Controller
       }
     }
 
-    public function listMyEvents(){        
-        $statuses = EventStatus::all();
-        $checkbox_array=array();
-        $search=0;
-        $search_text="";
-        $fromDate="";
-        $toDate="";
-        $rows = (Input::exists('rows'))?abs(Input::get('rows')): 15;
-        $page = (Input::exists('page'))? abs(Input::get('page')): 1;
+    public function listMyEvents(Request $request){  
         $current_id= Auth::user()->user()->id;
-        $events = Event::where('member_id',$current_id)->paginate($rows);
-        return view('frontend.events.my-event-list',compact('events','page','rows', 'search_text','statuses','checkbox_array','search','fromDate','toDate','current_id'));
-    }
+        $rows = (Input::exists('row'))? (Input::get('row') < 5)?5:Input::get('row'): 15; // how many rows for pagination
+        $statuses = EventStatus::lists('event_status_name','id');
+        $search_options = [
+            0=>'nothing',
+            1=>'event id',
+            2=>'event name',
+            3=>'event type',
+            4=>'request id',
+        ];
 
-    public function filterMyEvents(Request $request)    
-    {
-        $current_id= Auth::user()->user()->id;
-        $rows = (Input::exists('rows'))?abs(Input::get('rows')): 15;
-        $search=$request->search;
-        $search_text=$request->search_text;
-        $status=$request->status; 
-        $fromDate=$request->request_from_date;
-        $toDate=$request->request_to_date;        
-        $statuses= EventStatus::all();
-        $page = (Input::exists('page'))? abs(Input::get('page')): 1;
-        if(count($status)){
-          $checkbox_array=$request->status;
-        }else{
-          $checkbox_array=array();
-        } 
-        if($search)
-      {
-        switch($search)
-        {
-          case 1: $events= Event::where('member_id',$current_id)->where('event_id',$search_text)->latest()->paginate($rows);
-                  break;
-          case 2: if(count($status))
-                  {
-                    $events= Event::where('member_id',$current_id)->where('event_name','like','%'.$search_text.'%')->whereIn('event_status',$status)->latest()->paginate($rows);                    
-                  }
-                  else
-                  {
-                    $events= Event::where('member_id',$current_id)->where('event_name','like','%'.$search_text.'%')->latest()->paginate($rows);
-                  }
-                  break;
-            case 3: if(count($status))
-                  {
-                    $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
-                    $events= Event::where('member_id',$current_id)->whereIn('event_type_id',$type)->whereIn('event_status',$status)->latest()->paginate($rows);                    
-                  }
-                  else
-                  {
-                    $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
-                    $events= Event::where('member_id',$current_id)->whereIn('event_type_id',$type)->latest()->paginate($rows); 
-                  }
-                  break;
-            case 4:$events= Event::where('member_id',$current_id)->where('id',$search_text)->latest()->paginate($rows);
-                  break;
-        }       
-      }
-      else
-      {
-        if(count($status))
-        {
-          $events= Event::where('member_id',$current_id)->whereIn('event_status',$status)->latest()->paginate($rows);                    
+        $page = (Input::exists('page'))? abs(Input::get('page')): 1;        // current page
+        $status_selected = (Input::exists('status'))? $request->get('status'): array(); 
+        $search_option_selected = (Input::exists('search'))? intval(Input::get('search')): 0; 
+        $search_text = (Input::exists('search_text'))? Input::get('search_text'): "";         
+        $fromDate=(Input::exists('request_from_date'))? $request->request_from_date: "";
+        $toDate=(Input::exists('request_to_date'))? $request->request_to_date: "";
+        
+        $events = Event::where('member_id',$current_id)->paginate($rows);
+
+        if($search_option_selected){
+          switch($search_option_selected){
+            case 1: if(empty($status_selected) )
+                    {
+                        $events= Event::where('event_id',$search_text)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $events= Event::where('event_id',$search_text)->whereIn('event_status',$status_selected)->latest()->paginate($rows); 
+                    }
+                    break;
+            case 2: if(empty($status_selected) )
+                    {
+                        $events= Event::where('event_name',$search_text)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $events= Event::where('event_name',$search_text)->whereIn('event_status',$status_selected)->latest()->paginate($rows); 
+                    }
+                    break;
+              case 3: if(empty($status_selected) )
+                    {
+                      $type=EventType::select('id')->where('event_type_name','like','%'.$search_text.'%')->get();
+                      $events= Event::whereIn('event_type_id',$type)->latest()->paginate($rows); 
+                    }
+                    else
+                    {
+                      $type=EventType::select('id')->where('event_type_name',$search_text)->get();
+                      $events= Event::whereIn('event_type_id',$type)->whereIn('event_status',$status_selected)->latest()->paginate($rows);                    
+                    }
+                    break;
+              case 4:if(empty($status_selected) )
+                    {
+                        $events= Event::where('id',$search_text)->latest()->paginate($rows);
+                    }
+                    else
+                    {
+                      $events= Event::where('id',$search_text)->whereIn('event_status',$status_selected)->latest()->paginate($rows); 
+                    }
+                    break;
+            }       
+        } else {
+            if(empty($status_selected) )
+            {
+              $events = Event::where('member_id',$current_id)->paginate($rows);
+            }
+            else
+            {
+              $events= Event::whereIn('event_status',$status_selected)->latest()->paginate($rows);
+            }
         }
-        else
-        {
-          $events= Event::where('member_id',$current_id)->paginate($rows);
-        }
-      }
+        
         $from_date_records = array();
         $to_date_records = array();
         foreach ($events as $key => $event) {
@@ -649,9 +682,10 @@ class EventController extends Controller
         if(!empty($toDate))
           $events->forget($to_date_records);
         }   
-      return view('frontend.events.my-event-list',compact( 'events' ,'page','rows', 'search_text','statuses','checkbox_array','search','fromDate','toDate','current_id'));
-    }
 
+      return view('frontend.events.my-event-list',compact( 'rows','statuses','search_options','page','status_selected','search_option_selected','search_text','fromDate','toDate','events','current_id'));
+    }
+    
     /**
      * Display the specified resource.
      *

@@ -37,7 +37,7 @@ Route::group(['prefix' => 'payments', 'middleware'=>'auth.admin'], function(){
 //New routes admin side
 
 Route::group(['prefix' => 'events', 'middleware'=>'auth.admin'], function(){
-	Route::get('filter',[ 'as' => 'adminFilters', 'uses'=>'EventController@filterEvents' ]);//for  Filtering
+	Route::get('filter',[ 'as' => 'adminFilters', 'uses'=>'EventController@index' ]);//for  Filtering
 	Route::get('/show-subscribers/{id}/filter', [ 'as' => 'adminSubscriberFilters', 'uses'=>'EventController@subscribersFilter' ]);
 		Route::get('/', [ 'as' => 'adminEventContent', 'uses'=>'EventController@index' ]);
 	// Route::post('/',[ 'as' => 'adminEventChange', 'uses'=>'EventController@changeStatus' ]);
@@ -54,6 +54,8 @@ Route::group(['prefix' => 'events', 'middleware'=>'auth.admin'], function(){
 	Route::get('show-subscribers/{id}', [ 'as' => 'adminshowSuscribers', 'uses'=>'EventController@showSuscribers' ]);
 	Route::get('/show-nominees/{id}/csi', ['as' => 'adminshowNomineesCSI', 'uses'=>'EventController@showNomineeDetailsCSI']);
 	Route::get('/show-nominees/{id}/organisation', ['as' => 'adminshowNomineesORG', 'uses'=>'EventController@showNomineeDetailsORG']);
+
+	
 });
 
 
@@ -140,7 +142,7 @@ Route::group(['prefix' => 'events'], function(){
 
 		//filtering
 		Route::get('/show-subscribers/{id}/filter', [ 'as' => 'subscriberFilters', 'uses'=>'EventController@subscribersFilter' ]);
-		Route::get('filter', [ 'as' => 'myEventFilters', 'uses'=>'EventController@filterMyEvents' ]);
+		Route::get('filter', [ 'as' => 'myEventFilters', 'uses'=>'EventController@listMyEvents' ]);
 		
 
 		Route::get('/', [ 'as' => 'myEventList', 'uses'=>'EventController@listMyEvents' ]);
@@ -176,6 +178,44 @@ Route::group(['prefix' => 'events'], function(){
 	Route::get('/csi-indi-subscriber/{id}', ['as' => 'CsiIndiSubscribe', 'uses'=>'EventController@storeCsiIndiSubscriber']);
 	Route::get('/show-nominees/{id}/csi', ['as' => 'showNomineesCSI', 'uses'=>'EventController@showNomineeDetailsCSI']);
 	Route::get('/show-nominees/{id}/organisation', ['as' => 'showNomineesORG', 'uses'=>'EventController@showNomineeDetailsORG']);
+
+	Route::get('logo/{filename}', ['as' => 'eventLogo', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/logos' . $filename;
+
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
+
+	Route::get('banners/{filename}', ['as' => 'eventBanner', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/banners' . $filename;
+
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
+
+
+
+	Route::get('pdfs/{filename}', ['as' => 'eventPDF', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/pdfs' . $filename;
+
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
 });
 
 

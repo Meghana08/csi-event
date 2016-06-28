@@ -27,11 +27,6 @@
                     </br>
                 </div>
                 @endif
-            @if(!is_null($err))
-                <div class="alert alert-danger">
-                    {{ $err }}
-                </div>
-                @endif
 
             {!! Form::open(array('route' => ['createEvent'], 'files'=>true)) !!}
             {{ csrf_field() }}
@@ -40,13 +35,13 @@
                         <label class="req" for="event_name">
                             Event Title*
                         </label>
-                        {!! Form::text('event_name', null, ['class' => 'form-control', 'placeholder' => 'Title of the Event']) !!}
+                        {!! Form::text('event_name', old('event_name'), ['class' => 'form-control', 'placeholder' => 'Title of the Event']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_theme">
                             Event Theme*
                         </label>
-                        {!! Form::text('event_theme', null, ['class' => 'form-control', 'placeholder' => 'Theme of the Event']) !!}
+                        {!! Form::text('event_theme', old('event_theme'), ['class' => 'form-control', 'placeholder' => 'Theme of the Event']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_type_id">
@@ -62,7 +57,7 @@
                         <label class="req" for="event_start_date">
                             Start Date*
                         </label>
-                        {!! Form::text('event_start_date', null, ['class'=>'form-control', 'id'=>'event_start_date'])!!}
+                        {!! Form::text('event_start_date', old('event_start_date'), ['class'=>'form-control', 'id'=>'event_start_date'])!!}
                         <span class="help-text">
                         </span>
                     </div>
@@ -70,7 +65,7 @@
                         <label class="req" for="event_end_date">
                             End Date*
                         </label>
-                        {!! Form::text('event_end_date', null, ['class'=>'form-control', 'id'=>'event_end_date'])!!}
+                        {!! Form::text('event_end_date', old('event_end_date'), ['class'=>'form-control', 'id'=>'event_end_date'])!!}
                         <span class="help-text">
                         </span>
                     </div>
@@ -78,25 +73,25 @@
                         <label class="req" for="event_start_time">
                             Start Time(HH:MM:SS)*
                         </label>
-                        {!! Form::text('event_start_time', null, ['class' => 'form-control', 'placeholder' => 'Start Time']) !!}
+                        {!! Form::text('event_start_time', old('event_start_time'), ['class' => 'form-control', 'placeholder' => 'Start Time']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_end_time">
                             End Time(HH:MM:SS)*
                         </label>
-                        {!! Form::text('event_end_time', null, ['class' => 'form-control', 'placeholder' => 'End Time']) !!}
+                        {!! Form::text('event_end_time', old('event_end_time'), ['class' => 'form-control', 'placeholder' => 'End Time']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_venue">
                             Event Venue*
                         </label>
-                        {!! Form::text('event_venue', null, ['class' => 'form-control', 'placeholder' => 'Venue of the Event']) !!}
+                        {!! Form::text('event_venue', old('event_venue'), ['class' => 'form-control', 'placeholder' => 'Venue of the Event']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_description">
                             Event Description*
                         </label>
-                        {!! Form::text('event_description', null, ['class' => 'form-control', 'placeholder' => 'Description of the Event']) !!}
+                        {!! Form::text('event_description', old('event_description'), ['class' => 'form-control', 'placeholder' => 'Description of the Event']) !!}
                     </div>
                     <div class="form-group" id="pay">
                         <label class="req">
@@ -166,7 +161,7 @@
                         <label class="req" for="payment_date_deadline">
                             Payment Deadline Date(If Paid)*
                         </label>
-                        {!! Form::text('payment_date_deadline', null, ['class'=>'form-control', 'id'=>'payment_date_deadline', 'placeholder' => 'Deadline Time'])!!}
+                        {!! Form::text('payment_date_deadline', old('payment_date_deadline'), ['class'=>'form-control', 'id'=>'payment_date_deadline', 'placeholder' => 'Deadline Time'])!!}
                         <span class="help-text">
                         </span>
                     </div>
@@ -174,25 +169,25 @@
                         <label class="req" for="payment_time_deadline">
                             Payment Deadline Time(HH:MM:SS)*
                         </label>
-                        {!! Form::text('payment_time_deadline', null, ['class' => 'form-control', 'placeholder' => 'Deadline Time']) !!}
+                        {!! Form::text('payment_time_deadline', old('payment_time_deadline'), ['class' => 'form-control', 'placeholder' => 'Deadline Time']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_banner">
                             Event Banner
                         </label>
-                        {!! Form::file('event_banner', null, ['class' => 'form-control', 'id'=>'event_banner']) !!}
+                        {!! Form::file('event_banner', old('event_banner'), ['class' => 'form-control', 'id'=>'event_banner']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_pdf">
                             Event Description PDF
                         </label>
-                        {!! Form::file('event_pdf', null, ['class' => 'form-control', 'id'=>'event_pdf']) !!}
+                        {!! Form::file('event_pdf', old('event_pdf'), ['class' => 'form-control', 'id'=>'event_pdf']) !!}
                     </div>
                     <div class="form-group">
                         <label class="req" for="event_logo">
                             Event Logo
                         </label>
-                        {!! Form::file('event_logo', null, ['class' => 'form-control', 'id'=>'event_logo']) !!}
+                        {!! Form::file('event_logo', old('event_logo'), ['class' => 'form-control', 'id'=>'event_logo']) !!}
                     </div>
                     <!-- Event Type details -->
                     <hr>
@@ -200,13 +195,13 @@
                             <label class="req" for="max_seats">
                                 Maximum seats available*
                             </label>
-                            {!! Form::text('max_seats', null, ['class' => 'form-control', 'placeholder' => 'Maximum number of seats available.']) !!}
+                            {!! Form::text('max_seats', old('max_seats'), ['class' => 'form-control', 'placeholder' => 'Maximum number of seats available.']) !!}
                         </div>
                         <div class="form-group">
                             <label class="req" for="registration_start_date">
                                 registration Start Date*
                             </label>
-                            {!! Form::text('registration_start_date', null, ['class'=>'form-control', 'id'=>'registration_start_date'])!!}
+                            {!! Form::text('registration_start_date', old('registration_start_date'), ['class'=>'form-control', 'id'=>'registration_start_date'])!!}
                             <span class="help-text">
                             </span>
                         </div>
@@ -214,7 +209,7 @@
                             <label class="req" for="registration_end_date">
                                 Registration End Date*
                             </label>
-                            {!! Form::text('registration_end_date', null, ['class'=>'form-control', 'id'=>'registration_end_date'])!!}
+                            {!! Form::text('registration_end_date', old('registration_end_date'), ['class'=>'form-control', 'id'=>'registration_end_date'])!!}
                             <span class="help-text">
                             </span>
                         </div>
@@ -222,13 +217,13 @@
                             <label class="req" for="registration_start_time">
                                 Registration Start Time(HH:MM:SS)*
                             </label>
-                            {!! Form::text('registration_start_time', null, ['class' => 'form-control', 'placeholder' => 'Registration Start Time']) !!}
+                            {!! Form::text('registration_start_time', old('registration_start_time'), ['class' => 'form-control', 'placeholder' => 'Registration Start Time']) !!}
                         </div>
                         <div class="form-group">
                             <label class="req" for="registration_end_time">
                                 Registration End Time(HH:MM:SS)*
                             </label>
-                            {!! Form::text('registration_end_time', null, ['class' => 'form-control', 'placeholder' => 'Registration End Time']) !!}
+                            {!! Form::text('registration_end_time', old('registration_end_time'), ['class' => 'form-control', 'placeholder' => 'Registration End Time']) !!}
                         </div>
                         <div class="form-group" id="certification">
                             <label class="req">
