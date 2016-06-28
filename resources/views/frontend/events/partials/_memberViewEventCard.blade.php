@@ -80,9 +80,9 @@
               </a>
             @endif
         @else
-          @if(date($event->getEventTypeDetails->registration_start_date) > date($sysDate))
+          @if((date($event->getEventTypeDetails->registration_start_date) == date($sysDate) && date($event->getEventTypeDetails->registration_start_time) > date($sysTime)) || (date($event->getEventTypeDetails->registration_start_date) > date($sysDate)))
                 <span class="label label-danger pull-right" href="#">Subscription<br> not started</span>
-          @elseif(date($event->getEventTypeDetails->registration_end_date) < date($sysDate))
+          @elseif((date($event->getEventTypeDetails->registration_end_date) == date($sysDate) && date($event->getEventTypeDetails->registration_end_time) < date($sysTime)) || (date($event->getEventTypeDetails->registration_end_date) < date($sysDate)))
                 <span class="label label-danger pull-right" href="#">Subscription<br> over</span>                
           @else
                 <a class="btn btn-primary pull-right" href="#" data-toggle="modal" data-target="#myModal" data-eid="{{$event->id}}">Subscribe</a>

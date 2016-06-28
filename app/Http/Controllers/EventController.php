@@ -86,11 +86,23 @@ class EventController extends Controller
         if(date(Input::get('registration_end_date')) > date(Input::get('event_end_date'))) {
           array_push($err, "Event end date should be later than Registration end date");
         }
+        if(date(Input::get('event_start_date')) == date(Input::get('registration_start_date')) && date(Input::get('event_start_time')) > date(Input::get('registration_start_time'))) {
+          array_push($err, "Event start Time should be earlier than Registration start Time");
+        }
+        if(date(Input::get('registration_end_date')) == date(Input::get('event_end_date')) && date(Input::get('registration_end_time')) > date(Input::get('event_end_time'))) {
+          array_push($err, "Event end time should be later than Registration end time");
+        }
+        if((date(Input::get('registration_end_date')) == date(Input::get('registration_start_date'))) && (date(Input::get('registration_start_time')) > date(Input::get('registration_end_time')))) {
+          array_push($err, "Registration end time should be later than Registration Start time");
+        }
+        if((date(Input::get('event_end_date')) == date(Input::get('event_start_date'))) && (date(Input::get('event_start_time')) > date(Input::get('event_end_time')))) {
+          array_push($err, "event end time should be later than event Start time");
+        }
         
         return $err;
     }
 
-    public function store(Request $request)
+    public function store(CreateEventRequest $request)
     {
         $errors = $this->validateCreation($request);
 
@@ -198,8 +210,9 @@ class EventController extends Controller
     }
 
     public function viewAllEvents() {
+        date_default_timezone_set('Asia/Kolkata');
         $sysDate = date('Y-m-d');
-        $sysTime = date('H:i:s',time());
+        $sysTime = date('H:i:s');
         $memId = null;
         $memType = null;
         $subscribedEvents = null;
