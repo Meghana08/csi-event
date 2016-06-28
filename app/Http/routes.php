@@ -44,7 +44,7 @@ Route::group(['prefix' => 'events', 'middleware'=>'auth.admin'], function(){
 	Route::get('/{id}', [ 'as' => 'adminEventDetails', 'uses'=>'EventController@showEvent' ]);
 	Route::get('change-status/{id}/accept', [ 'as' => 'changeStatusAccept', 'uses'=>'EventController@changeStatusAccept' ]);
 	Route::get('change-status/{id}/reject', [ 'as' => 'changeStatusReject', 'uses'=>'EventController@changeStatusReject' ]);
-	Route::get('grant-status-change/{id}/accepted', [ 'as' => 'grantStatusChangeAccept', 'uses'=>'EventController@grantStatusChangeAccept' ]);
+	Route::get('grantb-status-change/{id}/accepted', [ 'as' => 'grantStatusChangeAccept', 'uses'=>'EventController@grantStatusChangeAccept' ]);
 	Route::post('grant-status-change/{id}/reject', [ 'as' => 'grantStatusChangeReject', 'uses'=>'EventController@grantStatusChangeReject' ]);
 	Route::post('grant-status-change/{id}/negotiate', [ 'as' => 'grantStatusChangeNegotiate', 'uses'=>'EventController@grantStatusChangeNegotiate' ]);
 	Route::get('change-status/{id}', [ 'as' => 'changeStatus', 'uses'=>'EventController@changeStatus' ]);
@@ -54,7 +54,44 @@ Route::group(['prefix' => 'events', 'middleware'=>'auth.admin'], function(){
 	Route::get('show-subscribers/{id}', [ 'as' => 'adminshowSuscribers', 'uses'=>'EventController@showSuscribers' ]);
 	Route::get('/show-nominees/{id}/csi', ['as' => 'adminshowNomineesCSI', 'uses'=>'EventController@showNomineeDetailsCSI']);
 	Route::get('/show-nominees/{id}/organisation', ['as' => 'adminshowNomineesORG', 'uses'=>'EventController@showNomineeDetailsORG']);
+	
+	Route::get('logo/{filename}', ['as' => 'adminEventLogo', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/logos/' . $filename;
 
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
+
+	Route::get('banners/{filename}', ['as' => 'adminEventBanner', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/banners/' . $filename;
+
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
+
+
+
+	Route::get('pdfs/{filename}', ['as' => 'adminEventPDF', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/pdfs/' . $filename;
+
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
 	
 });
 
@@ -180,7 +217,7 @@ Route::group(['prefix' => 'events'], function(){
 	Route::get('/show-nominees/{id}/organisation', ['as' => 'showNomineesORG', 'uses'=>'EventController@showNomineeDetailsORG']);
 
 	Route::get('logo/{filename}', ['as' => 'eventLogo', 'uses' => function($filename){
-	    $path = storage_path() . '/uploads/events/logos' . $filename;
+	    $path = storage_path() . '/uploads/events/logos/' . $filename;
 
 	    $file = File::get($path);
 	    $type = File::mimeType($path);
@@ -192,7 +229,7 @@ Route::group(['prefix' => 'events'], function(){
 	}]);
 
 	Route::get('banners/{filename}', ['as' => 'eventBanner', 'uses' => function($filename){
-	    $path = storage_path() . '/uploads/events/banners' . $filename;
+	    $path = storage_path() . '/uploads/events/banners/' . $filename;
 
 	    $file = File::get($path);
 	    $type = File::mimeType($path);
@@ -206,7 +243,7 @@ Route::group(['prefix' => 'events'], function(){
 
 
 	Route::get('pdfs/{filename}', ['as' => 'eventPDF', 'uses' => function($filename){
-	    $path = storage_path() . '/uploads/events/pdfs' . $filename;
+	    $path = storage_path() . '/uploads/events/pdfs/' . $filename;
 
 	    $file = File::get($path);
 	    $type = File::mimeType($path);

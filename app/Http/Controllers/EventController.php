@@ -140,7 +140,8 @@ class EventController extends Controller
             $event->event_logo=$logo;
 
             $event_name = $event->event_name;
-
+            $event->save();
+            
             if (Input::exists('targetType_1')) {
                 $type_id = TargetAudience::where('target_name','CSI Professional')->first()->id;
                 TargetAudienceWithFee::create([

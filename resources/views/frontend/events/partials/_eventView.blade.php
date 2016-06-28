@@ -6,7 +6,7 @@
         <div class="col-md-6">
           <h3>
           @if(!is_null($event->event_logo))
-            <img height="50px" width="50px" src={{ route(['eventLogo', $event->event_logo]) }} alt="...">
+            <img height="50px" width="50px" src={{ route('eventLogo', [$event->event_logo]) }} alt="...">
           @endif
             #Event-ID: {{ $event->id }}
           </h3>
@@ -17,7 +17,7 @@
         </div>
         <div class="col-md-6">
            @if(!is_null($event->event_banner))
-            <img width="99%" height="100px" src={{ route(['eventBanner', $event->event_banner]) }} alt="...">
+            <img width="99%" height="100px" src={{ route('eventBanner', [$event->event_banner]) }} alt="...">
            @endif          
         </div>
       </div>
