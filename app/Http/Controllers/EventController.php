@@ -71,16 +71,19 @@ class EventController extends Controller
         if($po && is_null($pd)) {
             array_push($err, "Enter Payment Deadline Date");
         } 
-        if(strtotime(Input::get('event_start_date')) > strtotime(Input::get('event_end_date'))) {
+        if(date(Input::get('payment_date_deadline')) > date(Input::get('event_end_date'))) {
+          array_push($err, "Payment Deadline should be earlier than Event End Date");
+        }
+        if(date(Input::get('event_start_date')) > date(Input::get('event_end_date'))) {
           array_push($err, "Start Event date should be earlier than End date");
         }
-        if(strtotime(Input::get('registration_start_date')) > strtotime(Input::get('registration_end_date'))) {
+        if(date(Input::get('registration_start_date')) > date(Input::get('registration_end_date'))) {
           array_push($err, "Registration Start date should be earlier than End date");
         }
-        if(strtotime(Input::get('event_start_date')) > strtotime(Input::get('registration_start_date'))) {
+        if(date(Input::get('event_start_date')) > date(Input::get('registration_start_date'))) {
           array_push($err, "Event start date should be earlier than Registration start date");
         }
-        if(strtotime(Input::get('registration_end_date')) > strtotime(Input::get('event_end_date'))) {
+        if(date(Input::get('registration_end_date')) > date(Input::get('event_end_date'))) {
           array_push($err, "Event end date should be later than Registration end date");
         }
         
@@ -196,7 +199,7 @@ class EventController extends Controller
 
     public function viewAllEvents() {
         $sysDate = date('Y-m-d');
-        $sysTime = date('H:i:s');        
+        $sysTime = date('H:i:s',time());
         $memId = null;
         $memType = null;
         $subscribedEvents = null;

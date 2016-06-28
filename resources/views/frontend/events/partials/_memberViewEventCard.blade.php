@@ -7,7 +7,7 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <p>
           <span><b>Event Type : </b>{{ $event->eventType->event_type_name }}</span>
         </p>
@@ -26,10 +26,21 @@
           <span><b>Start Date : </b>{{date('F d, Y', strtotime($event->event_start_date))}} - {{ date('h:i:sa', strtotime($event->event_start_time)) }}</span>
         </p>
         <p>
-          <span><b>Payment Deadline : </b>{{date('F d, Y', strtotime($event->event_end_date))}} - {{ date('h:i:sa', strtotime($event->payment_deadline)) }}</span>
+          <span><b>End Date : </b>{{date('F d, Y', strtotime($event->event_end_date))}} - {{ date('h:i:sa', strtotime($event->event_end_time)) }}</span>
         </p>
     </div>
-    <div class="col-md-4" style="padding-top: 15px;">
+      <div class="col-md-4">
+        <p>
+          <span><b>Registration Start : </b>{{date('F d, Y', strtotime($event->getEventTypeDetails->registration_start_date))}} - {{ date('h:i:sa', strtotime($event->getEventTypeDetails->registration_start_time)) }}</span>
+        </p>
+        <p>
+          <span><b>Registration End : </b>{{date('F d, Y', strtotime($event->getEventTypeDetails->registration_end_date))}} - {{ date('h:i:sa', strtotime($event->getEventTypeDetails->registration_end_time)) }}</span>
+        </p>
+        <p>
+          <span><b>Payment Deadline : </b>{{date('F d, Y', strtotime($event->payment_date_deadline))}} - {{ date('h:i:sa', strtotime($event->payment_time_deadline)) }}</span>
+        </p>
+    </div>
+    <div class="col-md-1" style="padding-top: 15px;">
       <ul class="list-unstyled pull-right" style="font-size: 16px">
         <li>
         @if(Auth::user()->check())
@@ -46,12 +57,17 @@
 
                 <!-- Checking for registration time period -->
                 
+                @if(date($event->getEventTypeDetails->registration_start_date) > date($sysDate))
+                      <span class="label label-danger pull-right" href="#">Subscription<br> not started</span>
+                @elseif(date($event->getEventTypeDetails->registration_end_date) < date($sysDate))
+                      <span class="label label-danger pull-right" href="#">Subscription<br> over</span>                
+                @else
                     @if(!strcmp($memType,'institutional'))     
                       <a class="btn btn-primary"  href={{ route('viewCsiOrganisationSubscriber' , $event->id)}}>Subscribe</a>
                     @else
                       <a class="btn btn-primary"  href={{ route('CsiIndiSubscribe' , $event->id)}}>Subscribe</a>
                     @endif
-                
+                @endif
             @else
               @if($memId == $event->member_id)
                 <span class="label label-warning pull-right">Creator</span>
@@ -64,7 +80,13 @@
               </a>
             @endif
         @else
+          @if(date($event->getEventTypeDetails->registration_start_date) > date($sysDate))
+                <span class="label label-danger pull-right" href="#">Subscription<br> not started</span>
+          @elseif(date($event->getEventTypeDetails->registration_end_date) < date($sysDate))
+                <span class="label label-danger pull-right" href="#">Subscription<br> over</span>                
+          @else
                 <a class="btn btn-primary pull-right" href="#" data-toggle="modal" data-target="#myModal" data-eid="{{$event->id}}">Subscribe</a>
+          @endif
         @endif
         </li>
       </ul>
