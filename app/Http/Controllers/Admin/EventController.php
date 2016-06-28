@@ -13,6 +13,8 @@ use App\EventRequestAdminDecision;
 use App\EventStatus;
 use App\EventStatusChange;
 use App\EventType;
+use App\TargetAudience;
+use App\TargetAudienceWithFee;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Institution;
@@ -185,8 +187,9 @@ class EventController extends Controller
               $user = Member::find(Event::find($id)->value('member_id'));
               $event = Event::find($id);
               $grants = EventGrant::where('event_id',$id)->get();
+              $targetAudience = TargetAudienceWithFee::where('event_id',$id)->get();
               $cancelRequests = EventCancellationRequest::where('event_id',$id)->first();
-              return view('backend.events.event', compact('user', 'event', 'grants','cancelRequests'));
+              return view('backend.events.event', compact('user', 'event', 'grants','cancelRequests','targetAudience'));
           }
     }
 

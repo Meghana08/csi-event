@@ -48,9 +48,11 @@
                   Not Provided
                 @endif
               </span>
+              <span><b>Details File : </b><a href="{{ route('eventPDF', [$event->event_pdf]) }}">Description File</a>
+              </span>
             </p>
           </div>
-          <div class="col-md-5">
+          <div class="col-md-4">
             <p>
               <span><b>Date of Request : </b>{{date('F d, Y', strtotime($event->created_at))}}</span>
               <span><b>Start of Event : </b>{{date('F d, Y', strtotime($event->event_start_date))}} - {{ date('h:i:sa', strtotime($event->event_start_time)) }}</span>
@@ -60,8 +62,17 @@
               <span><b>End of Registration : </b>{{date('F d, Y', strtotime($event->getEventTypeDetails->registration_end_date))}} - {{ date('h:i:sa', strtotime($event->getEventTypeDetails->registration_end_time)) }}</span>
             </p>
           </div>
+
+          <div class="col-md-3">
+            <span><b><u>Target Audience and fees :</u></b></span>
+            @foreach($targetAudience as $ta)
+                <p>
+                    <span><b>{{ $ta->feeTarget->target_name }} - Fee :</b>{{ $ta->fee }}</span>
+                </p>
+            @endforeach  
+          </div>        
           @if($isCreator)
-            <div class="col-md-4">
+            <div class="col-md-2">
               <p>
                   @if(!strcmp($event->eventStatus->event_status_name,'Accepted'))
                       <span class="label label-success pull-right">{{$event->eventStatus->event_status_name}}</span>
@@ -99,7 +110,7 @@
               @endif
             </div>          
           @else
-            <div class="col-md-4" style="padding-top: 15px;">
+            <div class="col-md-2" style="padding-top: 15px;">
             </div>
           @endif
       </div>

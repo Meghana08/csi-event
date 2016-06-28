@@ -339,9 +339,10 @@ class EventController extends Controller
               $user = Member::find($creatorId);
               $event = Event::find($id);
               $grants = EventGrant::where('event_id',$id);
+              $targetAudience = TargetAudienceWithFee::where('event_id',$id)->get();
               $cancelRequests = EventCancellationRequest::where('event_id',$id)->first();
               $eventPosts = EventPost::where('event_id',$id);
-              return view('frontend.events.event', compact('user', 'event', 'grants','cancelRequests','eventPosts','isCreator'));
+              return view('frontend.events.event', compact('user', 'event', 'grants','cancelRequests','eventPosts','isCreator','targetAudience'));
           }
     }
 
