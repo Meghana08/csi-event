@@ -11,7 +11,7 @@ class CreateNonCsiSubscriberRequest extends Request
     'non_csi_subscriber_name' => 'required|string',
     'email_id' => 'required|email',
     'contact_number' => 'required|string',
-    'dob' => 'required|date_format:d/m/Y',
+    'dob' => 'required|date_format:Y-m-d',
     'working_status' => 'required|string',
     ];
 

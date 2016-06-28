@@ -253,6 +253,20 @@ Route::group(['prefix' => 'events'], function(){
 
 	    return $response;
 	}]);
+
+
+
+	Route::get('post_images/{filename}', ['as' => 'eventPost', 'uses' => function($filename){
+	    $path = storage_path() . '/uploads/events/post_images/' . $filename;
+
+	    $file = File::get($path);
+	    $type = File::mimeType($path);
+
+	    $response = Response::make($file, 200);
+	    $response->header("Content-Type", $type);
+
+	    return $response;
+	}]);
 });
 
 

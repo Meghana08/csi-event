@@ -12,11 +12,11 @@
         <h6 style="font-weight:bold; color: #000">{{$post->post_text}}</h6>
       </p>
     </div>
-    <div class="col-md-12">
+    <div class="col-md-12">eventPost
       <p>
         <span>
             @if(!is_null($post->post_image))
-              <img width="100%" height="300px" src={{ asset('event/event_post_images/'.$post->post_image) }} alt="...">
+              <img width="100%" height="300px" src={{ route('eventPost', [$post->post_image]) }} alt="...">
             @endif
         </span>
       </p>

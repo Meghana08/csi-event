@@ -5,7 +5,7 @@ $(document).ready(function(){
 	var professionalLastDate = new Date(today.getFullYear() -18, 1, 1);
 	
 	$("#event_start_date").datepicker({
-		dateFormat : 'dd/mm/yy',
+		dateFormat : 'yy-mm-dd',
 		changeMonth: true,
 	    changeYear: true, 
 	    maxDate: new Date(today-100, 1,1),
@@ -13,7 +13,7 @@ $(document).ready(function(){
 	    yearRange:  "-100:+0"
 	}).val();
 	$("#event_end_date").datepicker({
-		dateFormat : 'dd/mm/yy',
+		dateFormat : 'yy-mm-dd',
 		changeMonth: true,
 	    changeYear: true, 
 	    maxDate: professionalLastDate,
@@ -23,7 +23,7 @@ $(document).ready(function(){
 	}).val();
 	
 	$("#registration_start_date").datepicker({
-		dateFormat : 'dd/mm/yy',
+		dateFormat : 'yy-mm-dd',
 		changeMonth: true,
 	    changeYear: true, 
 	    maxDate: professionalLastDate,
@@ -33,7 +33,7 @@ $(document).ready(function(){
 	}).val();
 	
 	$("#registration_end_date").datepicker({
-		dateFormat : 'dd/mm/yy',
+		dateFormat : 'yy-mm-dd',
 		changeMonth: true,
 	    changeYear: true, 
 	    maxDate: professionalLastDate,
@@ -43,7 +43,7 @@ $(document).ready(function(){
 	}).val();
 	
 	$("#payment_date_deadline").datepicker({
-		dateFormat : 'dd/mm/yy',
+		dateFormat : 'yy-mm-dd',
 		changeMonth: true,
 	    changeYear: true, 
 	    maxDate: professionalLastDate,
@@ -53,7 +53,7 @@ $(document).ready(function(){
 	}).val();
 	
 	$("#dob").datepicker({
-		dateFormat : 'dd/mm/yy',
+		dateFormat : 'yy-mm-dd',
 		changeMonth: true,
 	    changeYear: true, 
 	    maxDate: professionalLastDate,

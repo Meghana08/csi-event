@@ -66,7 +66,7 @@
 
               <div class="form-group">
                 <label for="event_start_date" class="req">Start Date*</label>
-                {!! Form::text('event_start_date', date('d/m/Y', strtotime($event->event_start_date)), ['class'=>'form-control', 'id'=>'event_start_date'])!!}
+                {!! Form::text('event_start_date', $event->event_start_date, ['class'=>'form-control', 'id'=>'event_start_date'])!!}
                 <span class="help-text"></span>
               </div>
 
@@ -74,7 +74,7 @@
 
              <div class="form-group">
               <label for="event_end_date" class="req">End Date*</label>
-              {!! Form::text('event_end_date',  date('d/m/Y', strtotime($event->event_end_date)), ['class'=>'form-control', 'id'=>'event_end_date'])!!}
+              {!! Form::text('event_end_date',  $event->event_end_date, ['class'=>'form-control', 'id'=>'event_end_date'])!!}
               <span class="help-text"></span>
             </div>
 
@@ -163,7 +163,7 @@
 
             <div class="form-group">
               <label for="payment_date_deadline" class="req">Payment Deadline Date(If Paid)*</label>
-              {!! Form::text('payment_date_deadline',  date('d/m/Y', strtotime($event->payment_date_deadline)), ['class'=>'form-control', 'id'=>'payment_date_deadline'])!!}
+              {!! Form::text('payment_date_deadline',  $event->payment_date_deadline, ['class'=>'form-control', 'id'=>'payment_date_deadline'])!!}
               <span class="help-text"></span>
             </div>
 
@@ -178,7 +178,7 @@
             <div class="form-group">
               <label for="event_banner" class="req">Event Banner : </label><br>
                  @if(!is_null($event->event_banner))
-                  <img width="80%" src={{ asset('event/event_banners/'.$event->event_banner) }} alt="...">
+                  <img width="80%" src={{ route('eventBanner', [$event->event_banner]) }} alt="...">
                  @endif
               {!! Form::file('event_banner',null, ['class' => 'form-control', 'id'=>'event_banner']) !!}
             </div>
@@ -186,7 +186,7 @@
             <div class="form-group">
               <label for="event_pdf" class="req">Event Description PDF : 
                @if(!is_null($event->event_pdf))
-                <a href={{ asset('event/event_pdfs/'.$event->event_pdf) }}>Description File</a>
+                <a href={{ route('eventPDF', [$event->event_pdf]) }}>Description File</a>
                @endif
               </label>
               {!! Form::file('event_pdf',null, ['class' => 'form-control', 'id'=>'event_pdf']) !!}
@@ -195,10 +195,10 @@
             <div class="form-group">
               <label for="event_logo" class="req">Event Logo : 
               @if(!is_null($event->event_logo))
-                <img height="20px" width="20px" src={{ asset('event/event_logos/'.$event->event_logo) }} alt="...">
+                <img height="50px" width="50px" src={{ route('eventLogo', [$event->event_logo]) }} alt="...">
               @endif
               </label>
-              {!! Form::file('event_logo', null, ['class' => 'form-control', 'id'=>'event_logo']) !!}
+              {!! Form::file('event_logo',null, ['class' => 'form-control', 'id'=>'event_logo']) !!}
             </div>
 
 
@@ -215,7 +215,7 @@
 
             <div class="form-group">
               <label for="registration_start_date" class="req">registration Start Date*</label>
-              {!! Form::text('registration_start_date',  date('d/m/Y', strtotime($eventTypeDetail->registration_start_date)), ['class'=>'form-control', 'id'=>'registration_start_date'])!!}
+              {!! Form::text('registration_start_date',  $eventTypeDetail->registration_start_date, ['class'=>'form-control', 'id'=>'registration_start_date'])!!}
               <span class="help-text"></span>
             </div>
 
@@ -223,7 +223,7 @@
 
              <div class="form-group">
               <label for="registration_end_date" class="req">Registration End Date*</label>
-              {!! Form::text('registration_end_date',  date('d/m/Y', strtotime($eventTypeDetail->registration_end_date)), ['class'=>'form-control', 'id'=>'registration_end_date'])!!}
+              {!! Form::text('registration_end_date',  $eventTypeDetail->registration_end_date, ['class'=>'form-control', 'id'=>'registration_end_date'])!!}
               <span class="help-text"></span>
             </div>
 

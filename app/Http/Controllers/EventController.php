@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Requests\CreateEventRequest;
+use App\Http\Requests\EditEventRequest;
 use App\Http\Requests\CreateNonCsiSubscriberRequest;
 use App\Http\Controllers\Controller;
 use App\Event;
@@ -29,6 +30,7 @@ use App\NonCsiIndividualSubscriber;
 use App\Member;
 use App\OrganisationSubscriberNominee;
 use App\CsiSubscriberNominee;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
@@ -105,7 +107,7 @@ class EventController extends Controller
     public function store(CreateEventRequest $request)
     {
         $errors = $this->validateCreation($request);
-
+      
         if($errors) {
           return redirect()->back()->withErrors($errors)->withInput();
         }
@@ -116,17 +118,17 @@ class EventController extends Controller
             $event->event_type_id = Input::get('event_type_id');
             $event->member_id= Auth::user()->user()->id;
             $event->event_theme = Input::get('event_theme');
-            $event->event_start_date = date('Y-m-d', strtotime(Input::get('event_start_date')));
-            $event->event_end_date = date('Y-m-d', strtotime(Input::get('event_end_date')));
+            $event->event_start_date = date(Input::get('event_start_date'));
+            $event->event_end_date = date(Input::get('event_end_date'));
             $event->event_start_time = Input::get('event_start_time');
             $event->event_end_time = Input::get('event_end_time');
             $event->event_venue = Input::get('event_venue');
             $event->event_description = Input::get('event_description');
             $event->payment_option = Input::get('payment_option');
-            $event->payment_date_deadline = date('Y-m-d', strtotime(Input::get('payment_deadline_date')));
-            $event->payment_time_deadline = Input::get('payment_deadline_time');
+            $event->payment_date_deadline = date(Input::get('payment_date_deadline'));
+            $event->payment_time_deadline = Input::get('payment_time_deadline');
             $event->save();
-            
+
             $bannerName = $event->id.'.'.$request->file('event_banner')->getClientOriginalExtension();
             $request->file('event_banner')->move(storage_path('uploads/events/banners'),$bannerName);
             $event->event_banner=$bannerName;
@@ -171,8 +173,8 @@ class EventController extends Controller
               'event_id' => $event->id,
               'event_type_id' => Input::get('event_type_id'),
               'max_seats' => Input::get('max_seats'),
-              'registration_start_date' => date('Y-m-d', strtotime(Input::get('registration_start_date'))),
-              'registration_end_date' => date('Y-m-d', strtotime(Input::get('registration_end_date'))),
+              'registration_start_date' => date(Input::get('registration_start_date')),
+              'registration_end_date' => date(Input::get('registration_end_date')),
               'registration_start_time' => Input::get('registration_start_time'),
               'registration_end_time' => Input::get('registration_end_time'),
               'certification' => Input::get('certification_option'),
@@ -270,7 +272,7 @@ class EventController extends Controller
         $subscriber->no_of_candidates=$no_of_candidates;
         $subscriber->save();
         for($i=0; $i<$no_of_candidates; $i++) {
-          $organisationSubscriber = new OrganisationSubscriberNominees;
+          $organisationSubscriber = new OrganisationSubscriberNominee;
           $organisationSubscriber->subscriber_id = $subscriber->id;
           $organisationSubscriber->nominee_name = Input::get('name'.$i);
           $organisationSubscriber->role = Input::get('role'.$i);
@@ -306,7 +308,7 @@ class EventController extends Controller
 
     public function storeNonCsiIndiSubscriber(CreateNonCsiSubscriberRequest $request, $id)
     {
-        $event=new NonCsiIndividualSubscribers;
+        $event=new NonCsiIndividualSubscriber;
         $event->name = Input::get('non_csi_subscriber_name');
         $event->event_id=$id;
         $event->dob = Input::get('dob');
@@ -374,34 +376,48 @@ class EventController extends Controller
       }
    }
 
-   public function editEvent(CreateEventRequest $request, $id) {
+   public function editEvent(EditEventRequest $request, $id) {
       if($id!=null || intval($id)>0){
+
+        $errors = $this->validateCreation($request);
+      
+        if($errors) {
+          return redirect()->back()->withErrors($errors);
+        }
+
         DB::transaction(function($connection) use($request, $id){
 
           $event = Event::find($id);
           $event->event_name = Input::get('event_name');
           $event->event_type_id = Input::get('event_type_id');
-          $event->event_start_date = date('Y-m-d', strtotime(Input::get('event_start_date')));
-          $event->event_end_date = date('Y-m-d', strtotime(Input::get('event_end_date')));
+          $event->event_start_date = date(Input::get('event_start_date'));
+          $event->event_end_date = date(Input::get('event_end_date'));
           $event->event_start_time = Input::get('event_start_time');
           $event->event_end_time = Input::get('event_end_time');
           $event->event_venue = Input::get('event_venue');
           $event->event_description = Input::get('event_description');
-          $event->payment_option = Input::get('payment_option');
-          $event->payment_date_deadline = date('Y-m-d', strtotime(Input::get('payment_deadline_date')));
-          $event->payment_time_deadline = Input::get('payment_deadline_time');
+          $event->payment_date_deadline = date(Input::get('payment_date_deadline'));
+          $event->payment_time_deadline = Input::get('payment_time_deadline');
           
-          $bannerName = $id.'.'.$request->file('event_banner')->getClientOriginalExtension();
-          $request->file('event_banner')->move(storage_path('uploads/events/banners'),$bannerName);
-          $event->event_banner = $bannerName;
+
+          if(!is_null($request->file('event_banner'))) {
+            $bannerName = $id.'.'.$request->file('event_banner')->getClientOriginalExtension();
+            $request->file('event_banner')->move(storage_path('uploads/events/banners'),$bannerName);
+            $event->event_banner = $bannerName;
+          }
+          
       
-          $fileName = $id.'.'.$request->file('event_pdf')->getClientOriginalExtension();
-          $request->file('event_pdf')->move(storage_path('uploads/events/pdfs'),$fileName);
-          $event->event_pdf = $fileName;
+          if(!is_null($request->file('event_pdf'))) {
+            $fileName = $id.'.'.$request->file('event_pdf')->getClientOriginalExtension();
+            $request->file('event_pdf')->move(storage_path('uploads/events/pdfs'),$fileName);
+            $event->event_pdf = $fileName;
+          }
       
-          $logo = $id.'.'.$request->file('event_logo')->getClientOriginalExtension();
-          $request->file('event_logo')->move(storage_path('uploads/events/logos'),$logo);
-          $event->event_logo = $logo;
+          if(!is_null($request->file('event_logo'))) {
+            $logo = $id.'.'.$request->file('event_logo')->getClientOriginalExtension();
+            $request->file('event_logo')->move(storage_path('uploads/events/logos'),$logo);
+            $event->event_logo = $logo;
+          }
           
           $event->save();
           
@@ -447,8 +463,8 @@ class EventController extends Controller
           EventTypeDetail::where('event_id',$id)->update([
               'event_type_id' => Input::get('event_type_id'),
               'max_seats' => Input::get('max_seats'),
-              'registration_start_date' => date('Y-m-d', strtotime(Input::get('registration_start_date'))),
-              'registration_end_date' => date('Y-m-d', strtotime(Input::get('registration_end_date'))),
+              'registration_start_date' => date(Input::get('registration_start_date')),
+              'registration_end_date' => date(Input::get('registration_end_date')),
               'registration_start_time' => Input::get('registration_start_time'),
               'registration_end_time' => Input::get('registration_end_time'),
               'certification' => Input::get('certification_option'),
